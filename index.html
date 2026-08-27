@@ -26,6 +26,7 @@
     .hero p { margin:0; color:#b8d6e8; font-size:14px; }
     .section-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:22px 20px 11px; }
     .section-head h2 { margin:0; font-size:19px; letter-spacing:-.3px; }.section-head span { color:var(--muted); font-size:12px; white-space:nowrap; }
+    .refresh-orders { border:0; background:#e3f4fa; color:#0a6683; border-radius:10px; padding:7px 10px; font-size:12px; font-weight:800; }
     .list { padding:0 16px; display:grid; gap:9px; }
     .row-card,.client-card,.diagnostic-card { border:0; text-align:left; width:100%; background:var(--white); border-radius:15px; box-shadow:0 1px 6px rgba(16,42,67,.055); }
     .row-card { min-height:77px; padding:10px 12px 10px 14px; display:flex; align-items:center; gap:8px; }.appointment-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:10px; min-width:0; flex:1; padding:4px 0; }.time { color:var(--blue); width:57px; font-weight:800; font-size:16px; }.grow { flex:1; min-width:0; }.name { display:block; font-weight:750; font-size:16px; color:var(--ink); letter-spacing:0; }.sub { display:block; color:#627d98; font-size:13px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -129,8 +130,9 @@
     }
     function renderAgenda() {
       const items = [...state.appointments, ...cloudOrders].sort((a,b)=>String(a.time).localeCompare(String(b.time)));
-      content.innerHTML = `<section class="hero"><div class="eyebrow">AGENDA DE HOY</div><h1>${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h1><p>${items.length} visitas programadas</p></section>${heading('Próximas visitas','Toca una visita para ver detalles')}<div class="list">${items.length ? items.map(a => `<article class="row-card"><button class="appointment-open" data-detail="appointment" data-id="${a.id}" type="button"><span class="time">${escape(a.time)}</span><span class="grow"><span class="name">${escape(a.client)}</span><span class="sub">${escape(a.service)}</span></span></button><button class="status status-button ${a.status === 'Confirmada' ? 'confirmed' : ''}" data-toggle-appointment="${a.id}" type="button" aria-label="Cambiar estado de la cita">${escape(a.status)}</button><button class="delete-button" data-delete-appointment="${a.id}" type="button">Eliminar</button></article>`).join('') : empty('No hay citas hoy','Añade la primera visita desde el botón azul.')}</div>`;
+      content.innerHTML = `<section class="hero"><div class="eyebrow">AGENDA DE HOY</div><h1>${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h1><p>${items.length} visitas programadas</p></section><div class="section-head"><h2>Próximas visitas</h2><button class="refresh-orders" id="refreshOrdersButton" type="button">↻ Actualizar pedidos</button></div><div class="list">${items.length ? items.map(a => `<article class="row-card"><button class="appointment-open" data-detail="appointment" data-id="${a.id}" type="button"><span class="time">${escape(a.time)}</span><span class="grow"><span class="name">${escape(a.client)}</span><span class="sub">${escape(a.service)}</span></span></button><button class="status status-button ${a.status === 'Confirmada' ? 'confirmed' : ''}" data-toggle-appointment="${a.id}" type="button" aria-label="Cambiar estado de la cita">${escape(a.status)}</button><button class="delete-button" data-delete-appointment="${a.id}" type="button">Eliminar</button></article>`).join('') : empty('No hay citas hoy','Añade la primera visita desde el botón azul.')}</div>`;
       bindDetails();
+      document.getElementById('refreshOrdersButton').addEventListener('click', () => refreshCloudOrders(true));
       document.querySelectorAll('[data-delete-appointment]').forEach(button => button.addEventListener('click', () => deleteAppointment(button.dataset.deleteAppointment)));
       document.querySelectorAll('[data-toggle-appointment]').forEach(button => button.addEventListener('click', () => toggleAppointmentStatus(button.dataset.toggleAppointment)));
     }
@@ -284,15 +286,30 @@
     document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : activeTab === 'diagnostics' ? 'diagnostic' : activeTab === 'invoices' ? 'invoice' : 'claim'));
     document.getElementById('cancelButton').addEventListener('click',closeModal); document.getElementById('saveButton').addEventListener('click',save);
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
+    function cloudOrderToAppointment(doc) {
+      const order = doc.data();
+      return { id:`cloud-${doc.id}`, remoteId:doc.id, client:order.clientName || 'Cliente', phone:order.clientPhone || '', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' };
+    }
+    async function refreshCloudOrders(showMessage = false) {
+      if (!window.jonasCloud || !cloudUser) { if (showMessage) toast('Conecta la agenda primero'); return; }
+      try {
+        const snapshot = await jonasCloud.db.collection('orders').get();
+        cloudOrders = snapshot.docs.map(cloudOrderToAppointment);
+        if (activeTab === 'agenda') render();
+        if (showMessage) toast('Pedidos actualizados');
+      } catch { if (showMessage) toast('No se pudieron actualizar los pedidos'); }
+    }
     function startCloudOrders() {
       if (!window.jonasCloud || !cloudUser) return;
       stopCloudOrders?.();
       stopCloudOrders = jonasCloud.db.collection('orders').onSnapshot(snapshot => {
-        cloudOrders = snapshot.docs.map(doc => { const order = doc.data(); return { id:`cloud-${doc.id}`, remoteId:doc.id, client:order.clientName || 'Cliente', phone:order.clientPhone || '', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' }; });
+        cloudOrders = snapshot.docs.map(cloudOrderToAppointment);
         render();
       }, () => { cloudOrders = []; if (activeTab === 'agenda') render(); });
     }
     if (window.jonasCloud) jonasCloud.auth.onAuthStateChanged(user => { cloudUser = user; if (user) startCloudOrders(); else { stopCloudOrders?.(); stopCloudOrders=null; cloudOrders=[]; } if (activeTab === 'settings' || activeTab === 'agenda') render(); });
+    window.addEventListener('focus', () => refreshCloudOrders(false));
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshCloudOrders(false); });
     if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
     applyTheme();
     render();
