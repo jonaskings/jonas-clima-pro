@@ -48,6 +48,7 @@
       <button class="tab active" data-tab="agenda" type="button"><span class="icon">▣</span><span>Agenda</span></button>
       <button class="tab" data-tab="clients" type="button"><span class="icon">◉</span><span>Clientes</span></button>
       <button class="tab" data-tab="diagnostics" type="button"><span class="icon">✓</span><span>Diagnósticos</span></button>
+      <button class="tab" data-tab="invoices" type="button"><span class="icon">€</span><span>Facturas</span></button>
     </nav>
   </main>
   <div class="modal-wrap" id="modalWrap" aria-hidden="true">
@@ -72,10 +73,14 @@
       diagnostics: [
         {id:'d1', client:'Marta Gómez', equipment:'Aire acondicionado Split', result:'Limpieza de filtros recomendada', date:'26 Ago'},
         {id:'d2', client:'Carlos Ruiz', equipment:'Caldera de gas', result:'Presión baja — requiere revisión', date:'25 Ago'}
+      ],
+      invoices: [
+        {id:'f1', number:'F-2026-001', client:'Marta Gómez', concept:'Mantenimiento de aire acondicionado', amount:'89.00', status:'Pendiente', date:'26 Ago'}
       ]
     };
     const copy = (value) => JSON.parse(JSON.stringify(value));
     let state; try { state = JSON.parse(localStorage.getItem('jonas-clima-pro')) || copy(defaults); } catch { state = copy(defaults); }
+    if (!Array.isArray(state.invoices)) state.invoices = [];
     let activeTab = 'agenda'; let modalType = null;
     const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
     const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
@@ -87,6 +92,7 @@
       if (activeTab === 'agenda') { add.textContent = '+ Nueva cita'; renderAgenda(); }
       if (activeTab === 'clients') { add.textContent = '+ Añadir cliente'; renderClients(); }
       if (activeTab === 'diagnostics') { add.textContent = '+ Diagnóstico'; renderDiagnostics(); }
+      if (activeTab === 'invoices') { add.textContent = '+ Crear factura'; renderInvoices(); }
     }
     function renderAgenda() {
       const items = [...state.appointments].sort((a,b)=>a.time.localeCompare(b.time));
@@ -101,38 +107,45 @@
       content.innerHTML = `${heading('Diagnósticos','Historial técnico')}<div class="list">${state.diagnostics.length ? state.diagnostics.map(d => `<button class="diagnostic-card" data-detail="diagnostic" data-id="${d.id}" type="button"><span class="card-top"><span class="name">${escape(d.client)}</span><span class="date">${escape(d.date)}</span></span><span class="sub">${escape(d.equipment || 'Equipo no indicado')}</span><span class="result">${escape(d.result)}</span></button>`).join('') : empty('Sin diagnósticos','Registra el resultado de una revisión.')}</div>`;
       bindDetails();
     }
+    function renderInvoices() {
+      const currency = new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'});
+      content.innerHTML = `${heading('Facturas',`${state.invoices.length} emitidas`)}<div class="list">${state.invoices.length ? state.invoices.map(f => `<button class="diagnostic-card" data-detail="invoice" data-id="${f.id}" type="button"><span class="card-top"><span class="name">${escape(f.number)}</span><span class="status ${f.status === 'Pagada' ? 'confirmed' : ''}">${escape(f.status)}</span></span><span class="sub">${escape(f.client)} · ${escape(f.date)}</span><span class="result">${escape(f.concept)}</span><span class="card-top" style="margin-top:12px"><span class="sub">Total</span><span class="name">${currency.format(Number(f.amount) || 0)}</span></span></button>`).join('') : empty('No hay facturas todavía','Crea la primera factura desde el botón azul.')}</div>`;
+      bindDetails();
+    }
     function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
     function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
     function showDetail(kind, id) {
-      const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : 'diagnostics'].find(i => i.id === id);
+      const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : 'invoices'].find(i => i.id === id);
       if (!item) return;
-      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : `${item.equipment || 'Equipo no indicado'}\n\n${item.result}`;
+      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})}\nEstado: ${item.status}`;
       alert(`${item.client || item.name}\n\n${details}`);
     }
     const fields = {
       appointment: [['client','Cliente *','Nombre del cliente','text'],['time','Hora *','Ej. 10:30','time'],['service','Tipo de servicio *','Mantenimiento, reparación...','text']],
       client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text']],
-      diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']]
+      diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']],
+      invoice: [['client','Cliente *','Nombre del cliente','text'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (€) *','Ej. 89,00','number']]
     };
     function openModal(type) {
-      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico'}; document.getElementById('modalTitle').textContent = titles[type];
+      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura'}; document.getElementById('modalTitle').textContent = titles[type];
       form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('');
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>form.querySelector('input,textarea').focus(),100);
     }
     function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalType=null; }
     function save() {
       const data = Object.fromEntries(new FormData(form));
-      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : ['client','result'];
+      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : modalType === 'diagnostic' ? ['client','result'] : ['client','concept','amount'];
       if (required.some(key => !String(data[key] || '').trim())) { toast('Completa los campos marcados con *'); return; }
       const id = String(Date.now());
       if (modalType === 'client') state.clients.unshift({id,...data});
       if (modalType === 'appointment') state.appointments.push({id,...data,status:'Pendiente'});
       if (modalType === 'diagnostic') state.diagnostics.unshift({id,...data,date:'Hoy'});
-      persist(); closeModal(); render(); toast(modalType === 'client' ? 'Cliente añadido' : modalType === 'appointment' ? 'Cita agendada' : 'Diagnóstico guardado');
+      if (modalType === 'invoice') state.invoices.unshift({id,number:`F-${new Date().getFullYear()}-${String(state.invoices.length + 1).padStart(3,'0')}`,client:data.client,concept:data.concept,amount:String(data.amount).replace(',','.'),status:'Pendiente',date:'Hoy'});
+      persist(); closeModal(); render(); toast(modalType === 'client' ? 'Cliente añadido' : modalType === 'appointment' ? 'Cita agendada' : modalType === 'diagnostic' ? 'Diagnóstico guardado' : 'Factura creada');
     }
     let toastTimer; function toast(message) { const el=document.getElementById('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
     document.querySelectorAll('.tab').forEach(button => button.addEventListener('click',()=>{ activeTab=button.dataset.tab; render(); }));
-    document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : 'diagnostic'));
+    document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : activeTab === 'diagnostics' ? 'diagnostic' : 'invoice'));
     document.getElementById('cancelButton').addEventListener('click',closeModal); document.getElementById('saveButton').addEventListener('click',save);
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
     if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
@@ -140,3 +153,4 @@
   </script>
 </body>
 </html>
+
