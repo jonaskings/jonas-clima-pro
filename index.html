@@ -16,9 +16,10 @@
     button,input,textarea { font:inherit; }
     button { cursor:pointer; }
     .app { max-width:520px; min-height:100dvh; margin:auto; background:var(--paper); box-shadow:0 0 40px rgba(16,42,67,.12); position:relative; padding-bottom:83px; }
-    .topbar { background:var(--ink); color:white; padding:calc(15px + env(safe-area-inset-top)) 20px 18px; display:flex; align-items:center; gap:11px; }
-    .logo { background:var(--mint); color:var(--ink); width:42px; height:42px; border-radius:13px; display:grid; place-items:center; font-size:14px; font-weight:800; letter-spacing:-.5px; }
-    .brand { font-weight:750; font-size:19px; letter-spacing:-.3px; } .tagline { color:#b8d6e8; font-size:12px; margin-top:2px; }
+    .topbar { background:linear-gradient(135deg,var(--ink) 0%,var(--blue) 55%,var(--ink) 100%); color:white; padding:calc(15px + env(safe-area-inset-top)) 20px 18px; display:flex; align-items:center; gap:15px; }
+    .brand-logo { width:92px; height:92px; overflow:hidden; border-radius:18px; background:#050505; box-shadow:0 7px 18px rgba(0,0,0,.26); flex:0 0 auto; }
+    .brand-logo img { display:block; width:100%; height:100%; object-fit:cover; }
+    .brand-copy { display:grid; gap:4px; }.brand-copy strong { font-size:17px; letter-spacing:-.2px; }.brand-copy span { color:#d7f7ee; font-size:12px; line-height:1.35; }
     .hero { background:var(--ink); color:white; padding:5px 20px 25px; }
     .hero .eyebrow { color:#74dcc5; font-size:11px; font-weight:800; letter-spacing:1.1px; }
     .hero h1 { font-size:24px; line-height:1.15; margin:6px 0; letter-spacing:-.6px; }
@@ -31,9 +32,10 @@
     .status { padding:5px 9px; border-radius:14px; color:var(--warm); background:var(--warm-bg); font-size:11px; font-weight:750; white-space:nowrap; }.confirmed { background:var(--good-bg); color:var(--good); }
     .client-card { min-height:82px; padding:14px; display:flex; align-items:center; gap:12px; }.avatar { height:46px; width:46px; border-radius:50%; background:var(--good-bg); color:var(--good); display:grid; place-items:center; font-size:18px; font-weight:800; flex:0 0 auto; }.phone { color:var(--blue); margin-top:5px; font-size:12px; font-weight:700; }.arrow { color:#94a3b8; font-size:29px; font-weight:300; }
     .diagnostic-card { padding:15px; }.card-top { display:flex; justify-content:space-between; gap:10px; align-items:center; }.date { color:var(--muted); font-size:12px; white-space:nowrap; }.result { color:#334e68; line-height:1.4; margin:11px 0 0; font-size:14px; }
+    .settings-card { background:#fff; border-radius:15px; padding:16px; box-shadow:0 1px 6px rgba(16,42,67,.055); }.settings-card h3 { margin:0; font-size:16px; }.settings-card p { color:var(--muted); font-size:13px; margin:5px 0 14px; line-height:1.4; }.theme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }.theme-option { min-height:52px; border:1px solid var(--line); border-radius:11px; background:#fff; color:var(--ink); font-size:12px; font-weight:700; }.theme-option.active { border-color:var(--blue); background:#e6f7f4; color:var(--blue); }.theme-dot { display:block; width:20px; height:20px; border-radius:50%; margin:0 auto 4px; }.session-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }.session-row .sub { white-space:normal; }.action-button { border:0; padding:10px 12px; border-radius:10px; background:var(--blue); color:#fff; font-size:13px; font-weight:750; white-space:nowrap; }.action-button.secondary { background:#e6edf3; color:var(--ink); }
     .empty { margin:15px 20px; background:white; border-radius:15px; padding:24px 18px; text-align:center; color:var(--muted); }.empty strong { display:block; color:var(--ink); margin-bottom:5px; }
     .fab { border:0; background:var(--blue); color:white; border-radius:25px; padding:13px 18px; font-size:14px; font-weight:750; position:fixed; max-width:480px; bottom:82px; right:max(20px,calc(50% - 240px)); box-shadow:0 6px 18px rgba(14,116,144,.28); }
-    .tabs { position:fixed; width:min(520px,100%); bottom:0; left:50%; transform:translateX(-50%); height:calc(67px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:white; display:flex; border-top:1px solid #e6edf3; }.tab { border:0; background:white; color:#94a3b8; flex:1; display:grid; place-items:center; align-content:center; gap:2px; font-size:11px; }.tab .icon { font-size:18px; line-height:18px; }.tab.active { color:var(--blue); font-weight:750; }
+    .tabs { position:fixed; width:min(520px,100%); bottom:0; left:50%; transform:translateX(-50%); height:calc(67px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:white; display:flex; border-top:1px solid #e6edf3; }.tab { border:0; background:white; color:#94a3b8; flex:1 1 0; min-width:0; display:grid; place-items:center; align-content:center; gap:2px; font-size:10px; line-height:1.05; }.tab span:last-child { max-width:100%; overflow-wrap:anywhere; }.tab .icon { font-size:16px; line-height:18px; }.tab.active { color:var(--blue); font-weight:750; }
     .modal-wrap { position:fixed; inset:0; background:rgba(16,42,67,.42); display:none; align-items:flex-end; justify-content:center; z-index:5; }.modal-wrap.show { display:flex; }.modal { width:min(520px,100%); background:var(--paper); border-radius:22px 22px 0 0; max-height:91dvh; overflow:auto; }.modal-head { position:sticky; top:0; z-index:2; background:white; height:59px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e6edf3; }.modal-head h3 { margin:0; font-size:17px; }.text-btn { background:transparent; border:0; padding:9px 0; color:var(--muted); font-size:15px; }.save { color:var(--blue); font-weight:800; }.form { padding:20px; }.field { display:grid; gap:7px; margin-bottom:19px; }.field label { color:#334e68; font-size:13px; font-weight:750; }.field input,.field textarea { width:100%; background:white; color:var(--ink); border:1px solid var(--line); border-radius:10px; min-height:47px; padding:12px 13px; outline-color:var(--blue); }.field textarea { min-height:112px; resize:vertical; }.required { color:var(--blue); }
     .toast { position:fixed; z-index:9; left:50%; transform:translateX(-50%) translateY(120px); bottom:92px; background:var(--ink); color:white; padding:11px 16px; border-radius:22px; font-size:14px; opacity:0; transition:.25s; white-space:nowrap; }.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
     @media (min-width:521px) { .fab { right:calc(50% - 240px); } }
@@ -41,14 +43,16 @@
 </head>
 <body>
   <main class="app">
-    <header class="topbar"><div class="logo">JC</div><div><div class="brand">Jonas Clima Pro</div><div class="tagline">Gestión de servicios técnicos</div></div></header>
+    <header class="topbar"><div class="brand-logo"><img src="jonas-clima-pro-logo.jpeg" alt="Logo Jonas Clima Pro"></div><div class="brand-copy"><strong>Gestión de servicios técnicos</strong><span>Agenda, clientes, diagnósticos, facturas y reclamaciones.</span></div></header>
     <section id="content" aria-live="polite"></section>
     <button id="addButton" class="fab" type="button">+ Nueva cita</button>
     <nav class="tabs" aria-label="Navegación principal">
       <button class="tab active" data-tab="agenda" type="button"><span class="icon">▣</span><span>Agenda</span></button>
       <button class="tab" data-tab="clients" type="button"><span class="icon">◉</span><span>Clientes</span></button>
       <button class="tab" data-tab="diagnostics" type="button"><span class="icon">✓</span><span>Diagnósticos</span></button>
-      <button class="tab" data-tab="invoices" type="button"><span class="icon">€</span><span>Facturas</span></button>
+      <button class="tab" data-tab="invoices" type="button"><span class="icon">RD$</span><span>Facturas</span></button>
+      <button class="tab" data-tab="claims" type="button"><span class="icon">!</span><span>Reclamaciones</span></button>
+      <button class="tab" data-tab="settings" type="button"><span class="icon">⚙</span><span>Ajustes</span></button>
     </nav>
   </main>
   <div class="modal-wrap" id="modalWrap" aria-hidden="true">
@@ -75,16 +79,29 @@
         {id:'d2', client:'Carlos Ruiz', equipment:'Caldera de gas', result:'Presión baja — requiere revisión', date:'25 Ago'}
       ],
       invoices: [
-        {id:'f1', number:'F-2026-001', client:'Marta Gómez', concept:'Mantenimiento de aire acondicionado', amount:'89.00', status:'Pendiente', date:'26 Ago'}
-      ]
+        {id:'f1', number:'F-2026-001', client:'Marta Gómez', concept:'Mantenimiento de aire acondicionado', amount:'8900.00', status:'Pendiente', date:'26 Ago'}
+      ],
+      claims: []
     };
     const copy = (value) => JSON.parse(JSON.stringify(value));
     let state; try { state = JSON.parse(localStorage.getItem('jonas-clima-pro')) || copy(defaults); } catch { state = copy(defaults); }
     if (!Array.isArray(state.invoices)) state.invoices = [];
+    if (!Array.isArray(state.claims)) state.claims = [];
+    if (!state.settings) state.settings = { theme:'azul' };
+    if (!state.session) state.session = { signedIn:true, name:'Jonas Clima Pro', email:'jonaskings@icloud.com' };
     let activeTab = 'agenda'; let modalType = null;
     const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
     const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
     const persist = () => localStorage.setItem('jonas-clima-pro', JSON.stringify(state));
+    const themes = {
+      azul: { ink:'#102a43', blue:'#0e7490', mint:'#26c6a2', paper:'#f5f7fa' },
+      turquesa: { ink:'#134e4a', blue:'#0f766e', mint:'#5eead4', paper:'#f0fdfa' },
+      noche: { ink:'#172554', blue:'#4338ca', mint:'#a5b4fc', paper:'#f5f3ff' }
+    };
+    function applyTheme() {
+      const theme = themes[state.settings.theme] || themes.azul;
+      Object.entries(theme).forEach(([key,value]) => document.documentElement.style.setProperty(`--${key}`,value));
+    }
     function heading(title, hint) { return `<div class="section-head"><h2>${title}</h2><span>${hint}</span></div>`; }
     function render() {
       document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
@@ -93,6 +110,8 @@
       if (activeTab === 'clients') { add.textContent = '+ Añadir cliente'; renderClients(); }
       if (activeTab === 'diagnostics') { add.textContent = '+ Diagnóstico'; renderDiagnostics(); }
       if (activeTab === 'invoices') { add.textContent = '+ Crear factura'; renderInvoices(); }
+      if (activeTab === 'claims') { add.textContent = '+ Nueva reclamación'; renderClaims(); }
+      if (activeTab === 'settings') { add.style.display = 'none'; renderSettings(); } else { add.style.display = ''; }
     }
     function renderAgenda() {
       const items = [...state.appointments].sort((a,b)=>a.time.localeCompare(b.time));
@@ -108,47 +127,60 @@
       bindDetails();
     }
     function renderInvoices() {
-      const currency = new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'});
+      const currency = new Intl.NumberFormat('es-DO',{style:'currency',currency:'DOP'});
       content.innerHTML = `${heading('Facturas',`${state.invoices.length} emitidas`)}<div class="list">${state.invoices.length ? state.invoices.map(f => `<button class="diagnostic-card" data-detail="invoice" data-id="${f.id}" type="button"><span class="card-top"><span class="name">${escape(f.number)}</span><span class="status ${f.status === 'Pagada' ? 'confirmed' : ''}">${escape(f.status)}</span></span><span class="sub">${escape(f.client)} · ${escape(f.date)}</span><span class="result">${escape(f.concept)}</span><span class="card-top" style="margin-top:12px"><span class="sub">Total</span><span class="name">${currency.format(Number(f.amount) || 0)}</span></span></button>`).join('') : empty('No hay facturas todavía','Crea la primera factura desde el botón azul.')}</div>`;
       bindDetails();
+    }
+    function renderClaims() {
+      content.innerHTML = `${heading('Reclamaciones',`${state.claims.length} registradas`)}<div class="list">${state.claims.length ? state.claims.map(c => `<button class="diagnostic-card" data-detail="claim" data-id="${c.id}" type="button"><span class="card-top"><span class="name">${escape(c.client)}</span><span class="status ${c.status === 'Resuelta' ? 'confirmed' : ''}">${escape(c.status)}</span></span><span class="sub">${escape(c.subject)} · ${escape(c.date)}</span><span class="result">${escape(c.description)}</span></button>`).join('') : empty('No hay reclamaciones','Registra una reclamación desde el botón azul.')}</div>`;
+      bindDetails();
+    }
+    function renderSettings() {
+      const signedIn = state.session.signedIn;
+      content.innerHTML = `${heading('Configuración','Personaliza la aplicación')}<div class="list"><section class="settings-card"><h3>Apariencia</h3><p>Elige el color principal de la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.theme === 'azul' ? 'active' : ''}" data-theme="azul" type="button"><span class="theme-dot" style="background:#0e7490"></span>Azul</button><button class="theme-option ${state.settings.theme === 'turquesa' ? 'active' : ''}" data-theme="turquesa" type="button"><span class="theme-dot" style="background:#0f766e"></span>Turquesa</button><button class="theme-option ${state.settings.theme === 'noche' ? 'active' : ''}" data-theme="noche" type="button"><span class="theme-dot" style="background:#4338ca"></span>Noche</button></div></section><section class="settings-card"><h3>Sesión</h3><p>${signedIn ? 'Sesión local activa en este dispositivo.' : 'No hay una sesión local activa.'}</p><div class="session-row"><div><div class="name">${escape(state.session.name)}</div><div class="sub">${escape(state.session.email)}</div></div><button id="sessionButton" class="action-button ${signedIn ? 'secondary' : ''}" type="button">${signedIn ? 'Cerrar sesión' : 'Iniciar sesión'}</button></div></section><section class="settings-card"><h3>Jonas Clima Pro</h3><p>Versión de demostración. Los datos se guardan en este dispositivo.</p></section></div>`;
+      document.querySelectorAll('[data-theme]').forEach(button => button.addEventListener('click', () => { state.settings.theme = button.dataset.theme; persist(); applyTheme(); render(); toast('Tema actualizado'); }));
+      document.getElementById('sessionButton').addEventListener('click', () => { state.session.signedIn = !state.session.signedIn; persist(); render(); toast(state.session.signedIn ? 'Sesión iniciada' : 'Sesión cerrada'); });
     }
     function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
     function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
     function showDetail(kind, id) {
-      const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : 'invoices'].find(i => i.id === id);
+      const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : kind === 'invoice' ? 'invoices' : 'claims'].find(i => i.id === id);
       if (!item) return;
-      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-ES',{style:'currency',currency:'EUR'})}\nEstado: ${item.status}`;
+      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
       alert(`${item.client || item.name}\n\n${details}`);
     }
     const fields = {
       appointment: [['client','Cliente *','Nombre del cliente','text'],['time','Hora *','Ej. 10:30','time'],['service','Tipo de servicio *','Mantenimiento, reparación...','text']],
       client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text']],
       diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']],
-      invoice: [['client','Cliente *','Nombre del cliente','text'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (€) *','Ej. 89,00','number']]
+      invoice: [['client','Cliente *','Nombre del cliente','text'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (RD$) *','Ej. 8,900.00','number']],
+      claim: [['client','Cliente *','Nombre del cliente','text'],['subject','Asunto *','Ej. Incidencia con la instalación','text'],['description','Detalle *','Describe la reclamación','textarea']]
     };
     function openModal(type) {
-      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura'}; document.getElementById('modalTitle').textContent = titles[type];
+      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación'}; document.getElementById('modalTitle').textContent = titles[type];
       form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('');
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>form.querySelector('input,textarea').focus(),100);
     }
     function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalType=null; }
     function save() {
       const data = Object.fromEntries(new FormData(form));
-      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : modalType === 'diagnostic' ? ['client','result'] : ['client','concept','amount'];
+      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : modalType === 'diagnostic' ? ['client','result'] : modalType === 'invoice' ? ['client','concept','amount'] : ['client','subject','description'];
       if (required.some(key => !String(data[key] || '').trim())) { toast('Completa los campos marcados con *'); return; }
       const id = String(Date.now());
       if (modalType === 'client') state.clients.unshift({id,...data});
       if (modalType === 'appointment') state.appointments.push({id,...data,status:'Pendiente'});
       if (modalType === 'diagnostic') state.diagnostics.unshift({id,...data,date:'Hoy'});
       if (modalType === 'invoice') state.invoices.unshift({id,number:`F-${new Date().getFullYear()}-${String(state.invoices.length + 1).padStart(3,'0')}`,client:data.client,concept:data.concept,amount:String(data.amount).replace(',','.'),status:'Pendiente',date:'Hoy'});
-      persist(); closeModal(); render(); toast(modalType === 'client' ? 'Cliente añadido' : modalType === 'appointment' ? 'Cita agendada' : modalType === 'diagnostic' ? 'Diagnóstico guardado' : 'Factura creada');
+      if (modalType === 'claim') state.claims.unshift({id,...data,status:'Pendiente',date:'Hoy'});
+      persist(); closeModal(); render(); toast(modalType === 'client' ? 'Cliente añadido' : modalType === 'appointment' ? 'Cita agendada' : modalType === 'diagnostic' ? 'Diagnóstico guardado' : modalType === 'invoice' ? 'Factura creada' : 'Reclamación registrada');
     }
     let toastTimer; function toast(message) { const el=document.getElementById('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
     document.querySelectorAll('.tab').forEach(button => button.addEventListener('click',()=>{ activeTab=button.dataset.tab; render(); }));
-    document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : activeTab === 'diagnostics' ? 'diagnostic' : 'invoice'));
+    document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : activeTab === 'diagnostics' ? 'diagnostic' : activeTab === 'invoices' ? 'invoice' : 'claim'));
     document.getElementById('cancelButton').addEventListener('click',closeModal); document.getElementById('saveButton').addEventListener('click',save);
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
     if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
+    applyTheme();
     render();
   </script>
 </body>
