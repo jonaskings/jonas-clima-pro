@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102a43">
+  <meta name="description" content="Agenda, clientes y diagnósticos para servicios de climatización.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>Jonas Clima Pro</title>
+  <style>
+    :root { --ink:#102a43; --blue:#0e7490; --mint:#26c6a2; --paper:#f5f7fa; --line:#d9e2ec; --muted:#627d98; --white:#fff; --good:#08755b; --good-bg:#d7f7ee; --warm:#916a00; --warm-bg:#fff3cd; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#dbe8ef; color:var(--ink); font:16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button,input,textarea { font:inherit; }
+    button { cursor:pointer; }
+    .app { max-width:520px; min-height:100dvh; margin:auto; background:var(--paper); box-shadow:0 0 40px rgba(16,42,67,.12); position:relative; padding-bottom:83px; }
+    .topbar { background:var(--ink); color:white; padding:calc(15px + env(safe-area-inset-top)) 20px 18px; display:flex; align-items:center; gap:11px; }
+    .logo { background:var(--mint); color:var(--ink); width:42px; height:42px; border-radius:13px; display:grid; place-items:center; font-size:14px; font-weight:800; letter-spacing:-.5px; }
+    .brand { font-weight:750; font-size:19px; letter-spacing:-.3px; } .tagline { color:#b8d6e8; font-size:12px; margin-top:2px; }
+    .hero { background:var(--ink); color:white; padding:5px 20px 25px; }
+    .hero .eyebrow { color:#74dcc5; font-size:11px; font-weight:800; letter-spacing:1.1px; }
+    .hero h1 { font-size:24px; line-height:1.15; margin:6px 0; letter-spacing:-.6px; }
+    .hero p { margin:0; color:#b8d6e8; font-size:14px; }
+    .section-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:22px 20px 11px; }
+    .section-head h2 { margin:0; font-size:19px; letter-spacing:-.3px; }.section-head span { color:var(--muted); font-size:12px; white-space:nowrap; }
+    .list { padding:0 16px; display:grid; gap:9px; }
+    .row-card,.client-card,.diagnostic-card { border:0; text-align:left; width:100%; background:var(--white); border-radius:15px; box-shadow:0 1px 6px rgba(16,42,67,.055); }
+    .row-card { min-height:77px; padding:14px; display:flex; align-items:center; gap:10px; }.time { color:var(--blue); width:57px; font-weight:800; font-size:16px; }.grow { flex:1; min-width:0; }.name { font-weight:750; font-size:16px; color:var(--ink); }.sub { color:#627d98; font-size:13px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .status { padding:5px 9px; border-radius:14px; color:var(--warm); background:var(--warm-bg); font-size:11px; font-weight:750; white-space:nowrap; }.confirmed { background:var(--good-bg); color:var(--good); }
+    .client-card { min-height:82px; padding:14px; display:flex; align-items:center; gap:12px; }.avatar { height:46px; width:46px; border-radius:50%; background:var(--good-bg); color:var(--good); display:grid; place-items:center; font-size:18px; font-weight:800; flex:0 0 auto; }.phone { color:var(--blue); margin-top:5px; font-size:12px; font-weight:700; }.arrow { color:#94a3b8; font-size:29px; font-weight:300; }
+    .diagnostic-card { padding:15px; }.card-top { display:flex; justify-content:space-between; gap:10px; align-items:center; }.date { color:var(--muted); font-size:12px; white-space:nowrap; }.result { color:#334e68; line-height:1.4; margin:11px 0 0; font-size:14px; }
+    .empty { margin:15px 20px; background:white; border-radius:15px; padding:24px 18px; text-align:center; color:var(--muted); }.empty strong { display:block; color:var(--ink); margin-bottom:5px; }
+    .fab { border:0; background:var(--blue); color:white; border-radius:25px; padding:13px 18px; font-size:14px; font-weight:750; position:fixed; max-width:480px; bottom:82px; right:max(20px,calc(50% - 240px)); box-shadow:0 6px 18px rgba(14,116,144,.28); }
+    .tabs { position:fixed; width:min(520px,100%); bottom:0; left:50%; transform:translateX(-50%); height:calc(67px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:white; display:flex; border-top:1px solid #e6edf3; }.tab { border:0; background:white; color:#94a3b8; flex:1; display:grid; place-items:center; align-content:center; gap:2px; font-size:11px; }.tab .icon { font-size:18px; line-height:18px; }.tab.active { color:var(--blue); font-weight:750; }
+    .modal-wrap { position:fixed; inset:0; background:rgba(16,42,67,.42); display:none; align-items:flex-end; justify-content:center; z-index:5; }.modal-wrap.show { display:flex; }.modal { width:min(520px,100%); background:var(--paper); border-radius:22px 22px 0 0; max-height:91dvh; overflow:auto; }.modal-head { position:sticky; top:0; z-index:2; background:white; height:59px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e6edf3; }.modal-head h3 { margin:0; font-size:17px; }.text-btn { background:transparent; border:0; padding:9px 0; color:var(--muted); font-size:15px; }.save { color:var(--blue); font-weight:800; }.form { padding:20px; }.field { display:grid; gap:7px; margin-bottom:19px; }.field label { color:#334e68; font-size:13px; font-weight:750; }.field input,.field textarea { width:100%; background:white; color:var(--ink); border:1px solid var(--line); border-radius:10px; min-height:47px; padding:12px 13px; outline-color:var(--blue); }.field textarea { min-height:112px; resize:vertical; }.required { color:var(--blue); }
+    .toast { position:fixed; z-index:9; left:50%; transform:translateX(-50%) translateY(120px); bottom:92px; background:var(--ink); color:white; padding:11px 16px; border-radius:22px; font-size:14px; opacity:0; transition:.25s; white-space:nowrap; }.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+    @media (min-width:521px) { .fab { right:calc(50% - 240px); } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar"><div class="logo">JC</div><div><div class="brand">Jonas Clima Pro</div><div class="tagline">Gestión de servicios técnicos</div></div></header>
+    <section id="content" aria-live="polite"></section>
+    <button id="addButton" class="fab" type="button">+ Nueva cita</button>
+    <nav class="tabs" aria-label="Navegación principal">
+      <button class="tab active" data-tab="agenda" type="button"><span class="icon">▣</span><span>Agenda</span></button>
+      <button class="tab" data-tab="clients" type="button"><span class="icon">◉</span><span>Clientes</span></button>
+      <button class="tab" data-tab="diagnostics" type="button"><span class="icon">✓</span><span>Diagnósticos</span></button>
+    </nav>
+  </main>
+  <div class="modal-wrap" id="modalWrap" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header class="modal-head"><button class="text-btn" id="cancelButton" type="button">Cancelar</button><h3 id="modalTitle">Nueva cita</h3><button class="text-btn save" id="saveButton" type="button">Guardar</button></header>
+      <form id="form" class="form"></form>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const defaults = {
+      clients: [
+        {id:'c1', name:'Marta Gómez', phone:'600 123 456', address:'C. Mayor 12, Madrid', equipment:'Aire acondicionado Split'},
+        {id:'c2', name:'Carlos Ruiz', phone:'611 234 567', address:'Av. del Sol 48, Madrid', equipment:'Caldera de gas'},
+        {id:'c3', name:'Elena Torres', phone:'622 345 678', address:'C. Jardines 7, Madrid', equipment:'Bomba de calor'}
+      ],
+      appointments: [
+        {id:'a1', client:'Marta Gómez', time:'09:30', service:'Mantenimiento', status:'Confirmada'},
+        {id:'a2', client:'Carlos Ruiz', time:'12:00', service:'Reparación', status:'Pendiente'},
+        {id:'a3', client:'Elena Torres', time:'16:30', service:'Diagnóstico', status:'Confirmada'}
+      ],
+      diagnostics: [
+        {id:'d1', client:'Marta Gómez', equipment:'Aire acondicionado Split', result:'Limpieza de filtros recomendada', date:'26 Ago'},
+        {id:'d2', client:'Carlos Ruiz', equipment:'Caldera de gas', result:'Presión baja — requiere revisión', date:'25 Ago'}
+      ]
+    };
+    const copy = (value) => JSON.parse(JSON.stringify(value));
+    let state; try { state = JSON.parse(localStorage.getItem('jonas-clima-pro')) || copy(defaults); } catch { state = copy(defaults); }
+    let activeTab = 'agenda'; let modalType = null;
+    const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
+    const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+    const persist = () => localStorage.setItem('jonas-clima-pro', JSON.stringify(state));
+    function heading(title, hint) { return `<div class="section-head"><h2>${title}</h2><span>${hint}</span></div>`; }
+    function render() {
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
+      const add = document.getElementById('addButton');
+      if (activeTab === 'agenda') { add.textContent = '+ Nueva cita'; renderAgenda(); }
+      if (activeTab === 'clients') { add.textContent = '+ Añadir cliente'; renderClients(); }
+      if (activeTab === 'diagnostics') { add.textContent = '+ Diagnóstico'; renderDiagnostics(); }
+    }
+    function renderAgenda() {
+      const items = [...state.appointments].sort((a,b)=>a.time.localeCompare(b.time));
+      content.innerHTML = `<section class="hero"><div class="eyebrow">AGENDA DE HOY</div><h1>${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h1><p>${items.length} visitas programadas</p></section>${heading('Próximas visitas','Toca una visita para ver detalles')}<div class="list">${items.length ? items.map(a => `<button class="row-card" data-detail="appointment" data-id="${a.id}" type="button"><span class="time">${escape(a.time)}</span><span class="grow"><span class="name">${escape(a.client)}</span><span class="sub">${escape(a.service)}</span></span><span class="status ${a.status === 'Confirmada' ? 'confirmed' : ''}">${escape(a.status)}</span></button>`).join('') : empty('No hay citas hoy','Añade la primera visita desde el botón azul.')}</div>`;
+      bindDetails();
+    }
+    function renderClients() {
+      content.innerHTML = `${heading('Clientes',`${state.clients.length} registrados`)}<div class="list">${state.clients.length ? state.clients.map(c => `<button class="client-card" data-detail="client" data-id="${c.id}" type="button"><span class="avatar">${escape(c.name.charAt(0).toUpperCase())}</span><span class="grow"><span class="name">${escape(c.name)}</span><span class="sub">${escape(c.equipment || 'Equipo pendiente')}</span><span class="phone">${escape(c.phone)}</span></span><span class="arrow">›</span></button>`).join('') : empty('Aún no hay clientes','Añade el primero para crear su ficha.')}</div>`;
+      bindDetails();
+    }
+    function renderDiagnostics() {
+      content.innerHTML = `${heading('Diagnósticos','Historial técnico')}<div class="list">${state.diagnostics.length ? state.diagnostics.map(d => `<button class="diagnostic-card" data-detail="diagnostic" data-id="${d.id}" type="button"><span class="card-top"><span class="name">${escape(d.client)}</span><span class="date">${escape(d.date)}</span></span><span class="sub">${escape(d.equipment || 'Equipo no indicado')}</span><span class="result">${escape(d.result)}</span></button>`).join('') : empty('Sin diagnósticos','Registra el resultado de una revisión.')}</div>`;
+      bindDetails();
+    }
+    function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
+    function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
+    function showDetail(kind, id) {
+      const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : 'diagnostics'].find(i => i.id === id);
+      if (!item) return;
+      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : `${item.equipment || 'Equipo no indicado'}\n\n${item.result}`;
+      alert(`${item.client || item.name}\n\n${details}`);
+    }
+    const fields = {
+      appointment: [['client','Cliente *','Nombre del cliente','text'],['time','Hora *','Ej. 10:30','time'],['service','Tipo de servicio *','Mantenimiento, reparación...','text']],
+      client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text']],
+      diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']]
+    };
+    function openModal(type) {
+      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico'}; document.getElementById('modalTitle').textContent = titles[type];
+      form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('');
+      modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>form.querySelector('input,textarea').focus(),100);
+    }
+    function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalType=null; }
+    function save() {
+      const data = Object.fromEntries(new FormData(form));
+      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : ['client','result'];
+      if (required.some(key => !String(data[key] || '').trim())) { toast('Completa los campos marcados con *'); return; }
+      const id = String(Date.now());
+      if (modalType === 'client') state.clients.unshift({id,...data});
+      if (modalType === 'appointment') state.appointments.push({id,...data,status:'Pendiente'});
+      if (modalType === 'diagnostic') state.diagnostics.unshift({id,...data,date:'Hoy'});
+      persist(); closeModal(); render(); toast(modalType === 'client' ? 'Cliente añadido' : modalType === 'appointment' ? 'Cita agendada' : 'Diagnóstico guardado');
+    }
+    let toastTimer; function toast(message) { const el=document.getElementById('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
+    document.querySelectorAll('.tab').forEach(button => button.addEventListener('click',()=>{ activeTab=button.dataset.tab; render(); }));
+    document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : 'diagnostic'));
+    document.getElementById('cancelButton').addEventListener('click',closeModal); document.getElementById('saveButton').addEventListener('click',save);
+    modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
+    if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
+    render();
+  </script>
+</body>
+</html>
