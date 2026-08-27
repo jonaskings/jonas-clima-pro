@@ -239,8 +239,19 @@
     };
     function openModal(type) {
       modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación',session:'Conectar agenda'}; document.getElementById('modalTitle').textContent = titles[type];
-      form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('');
+      form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('') + (type === 'session' ? '<button class="action-button secondary" id="resetPasswordButton" type="button">Olvidé mi contraseña</button>' : '');
+      if (type === 'session') {
+        document.getElementById('email').value = 'jonaskings@icloud.com';
+        document.getElementById('resetPasswordButton').addEventListener('click', resetAdminPassword);
+      }
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>form.querySelector('input,textarea').focus(),100);
+    }
+    async function resetAdminPassword() {
+      if (!window.jonasCloud) { toast('La conexión no está disponible'); return; }
+      const email = document.getElementById('email').value.trim();
+      if (!email) { toast('Escribe el correo del administrador'); return; }
+      try { await jonasCloud.auth.sendPasswordResetEmail(email); toast('Enlace enviado. Revisa tu correo.'); }
+      catch { toast('No se pudo enviar el enlace de recuperación'); }
     }
     function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalType=null; }
     async function save() {
