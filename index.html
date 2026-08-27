@@ -6,21 +6,21 @@
   <meta name="theme-color" content="#102a43">
   <meta name="description" content="Agenda, clientes y diagnósticos para servicios de climatización.">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="icon" href="jonas-clima-pro-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="jonas-clima-pro-icon.png">
   <title>Jonas Clima Pro</title>
   <style>
-    :root { --ink:#102a43; --blue:#0e7490; --mint:#26c6a2; --paper:#f5f7fa; --line:#d9e2ec; --muted:#627d98; --white:#fff; --good:#08755b; --good-bg:#d7f7ee; --warm:#916a00; --warm-bg:#fff3cd; }
+    :root { --ink:#102a43; --blue:#0e7490; --mint:#26c6a2; --paper:#f5f7fa; --line:#d9e2ec; --muted:#627d98; --white:#fff; --good:#08755b; --good-bg:#d7f7ee; --warm:#916a00; --warm-bg:#fff3cd; --wallpaper:#dbe8ef; }
     * { box-sizing:border-box; }
-    body { margin:0; background:#dbe8ef; color:var(--ink); font:16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    body { margin:0; background:var(--wallpaper); color:var(--ink); font:16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     button,input,textarea { font:inherit; }
     button { cursor:pointer; }
-    .app { max-width:520px; min-height:100dvh; margin:auto; background:var(--paper); box-shadow:0 0 40px rgba(16,42,67,.12); position:relative; padding-bottom:83px; }
-    .topbar { background:linear-gradient(135deg,var(--ink) 0%,var(--blue) 55%,var(--ink) 100%); color:white; padding:calc(15px + env(safe-area-inset-top)) 20px 18px; display:flex; align-items:center; gap:15px; }
-    .brand-logo { width:92px; height:92px; overflow:hidden; border-radius:18px; background:#050505; box-shadow:0 7px 18px rgba(0,0,0,.26); flex:0 0 auto; }
+    .app { max-width:520px; min-height:100dvh; margin:auto; background:radial-gradient(ellipse at 92% 250px,rgba(14,116,144,.65) 0,rgba(14,116,144,0) 44%),linear-gradient(160deg,#050505 0,#071018 188px,#0a2c45 315px,#15385a 400px,var(--paper) 430px); box-shadow:0 0 40px rgba(16,42,67,.12); position:relative; padding-bottom:83px; }
+    .topbar { background:transparent; color:white; padding:calc(15px + env(safe-area-inset-top)) 20px 18px; display:grid; gap:13px; position:relative; }
+    .brand-main { display:flex; align-items:center; gap:15px; }.brand-logo { width:112px; height:112px; overflow:hidden; border-radius:20px; background:#050505; box-shadow:0 7px 18px rgba(0,0,0,.26); flex:0 0 auto; }
     .brand-logo img { display:block; width:100%; height:100%; object-fit:cover; }
-    .brand-copy { display:grid; gap:4px; }.brand-copy strong { font-size:17px; letter-spacing:-.2px; }.brand-copy span { color:#d7f7ee; font-size:12px; line-height:1.35; }
-    .hero { background:var(--ink); color:white; padding:5px 20px 25px; }
+    .brand-copy { display:grid; gap:4px; }.brand-copy strong { font-size:22px; letter-spacing:-.4px; }.brand-copy span { color:#d7f7ee; font-size:14px; font-weight:650; line-height:1.35; }.service-tags { display:flex; flex-wrap:wrap; gap:7px; }.service-tags span { background:rgba(255,255,255,.16); color:#eafcff; border-radius:14px; padding:6px 9px; font-size:11px; font-weight:700; }.header-phone { width:max-content; display:flex; align-items:center; gap:7px; color:#d8faff; text-decoration:none; font-size:14px; font-weight:800; letter-spacing:.2px; padding:4px 0; }.whatsapp-icon { width:20px; height:20px; flex:0 0 auto; }.header-menu { position:absolute; top:calc(13px + env(safe-area-inset-top)); right:14px; width:34px; height:34px; border:0; border-radius:50%; background:rgba(255,255,255,.1); color:#fff; font-size:24px; line-height:1; }
+    .hero { background:transparent; color:white; padding:5px 20px 25px; position:relative; }
     .hero .eyebrow { color:#74dcc5; font-size:11px; font-weight:800; letter-spacing:1.1px; }
     .hero h1 { font-size:24px; line-height:1.15; margin:6px 0; letter-spacing:-.6px; }
     .hero p { margin:0; color:#b8d6e8; font-size:14px; }
@@ -28,11 +28,11 @@
     .section-head h2 { margin:0; font-size:19px; letter-spacing:-.3px; }.section-head span { color:var(--muted); font-size:12px; white-space:nowrap; }
     .list { padding:0 16px; display:grid; gap:9px; }
     .row-card,.client-card,.diagnostic-card { border:0; text-align:left; width:100%; background:var(--white); border-radius:15px; box-shadow:0 1px 6px rgba(16,42,67,.055); }
-    .row-card { min-height:77px; padding:10px 12px 10px 14px; display:flex; align-items:center; gap:8px; }.appointment-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:10px; min-width:0; flex:1; padding:4px 0; }.time { color:var(--blue); width:57px; font-weight:800; font-size:16px; }.grow { flex:1; min-width:0; }.name { font-weight:750; font-size:16px; color:var(--ink); }.sub { color:#627d98; font-size:13px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .row-card { min-height:77px; padding:10px 12px 10px 14px; display:flex; align-items:center; gap:8px; }.appointment-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:10px; min-width:0; flex:1; padding:4px 0; }.time { color:var(--blue); width:57px; font-weight:800; font-size:16px; }.grow { flex:1; min-width:0; }.name { display:block; font-weight:750; font-size:16px; color:var(--ink); letter-spacing:0; }.sub { display:block; color:#627d98; font-size:13px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .status { padding:5px 9px; border-radius:14px; color:var(--warm); background:var(--warm-bg); font-size:11px; font-weight:750; white-space:nowrap; }.status-button { border:0; cursor:pointer; font-family:inherit; }.status-button::after { content:'⌄'; margin-left:5px; font-size:10px; }.confirmed { background:var(--good-bg); color:var(--good); }
-    .client-card { min-height:82px; padding:10px 12px 10px 14px; display:flex; align-items:center; gap:8px; }.client-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:12px; min-width:0; flex:1; padding:4px 0; }.delete-button { border:0; background:#fde8e8; color:#b42318; border-radius:9px; padding:8px 9px; font-size:12px; font-weight:750; }.avatar { height:46px; width:46px; border-radius:50%; background:var(--good-bg); color:var(--good); display:grid; place-items:center; font-size:18px; font-weight:800; flex:0 0 auto; }.phone { color:var(--blue); margin-top:5px; font-size:12px; font-weight:700; }.arrow { color:#94a3b8; font-size:29px; font-weight:300; }
+    .client-card { min-height:82px; padding:10px 12px 10px 14px; }.client-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:12px; min-width:0; width:100%; padding:4px 0; }.client-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:7px; margin-top:8px; }.date-button { border:0; background:#e3f4fa; color:#0a6683; border-radius:9px; padding:8px 9px; font-size:12px; font-weight:750; }.delete-button { border:0; background:#fde8e8; color:#b42318; border-radius:9px; padding:8px 9px; font-size:12px; font-weight:750; }.avatar { height:46px; width:46px; border-radius:50%; background:var(--good-bg); color:var(--good); display:grid; place-items:center; font-size:18px; font-weight:800; flex:0 0 auto; }.phone { color:var(--blue); margin-top:5px; font-size:12px; font-weight:700; }.client-date { color:#16806f; margin-top:5px; font-size:12px; font-weight:700; }.arrow { color:#94a3b8; font-size:29px; font-weight:300; }
     .diagnostic-card { padding:13px; }.diagnostic-open { border:0; background:transparent; color:inherit; text-align:left; display:block; width:100%; padding:0; }.diagnostic-actions { display:flex; justify-content:flex-end; margin-top:10px; }.card-top { display:flex; justify-content:space-between; gap:10px; align-items:center; }.date { color:var(--muted); font-size:12px; white-space:nowrap; }.result { color:#334e68; line-height:1.4; margin:11px 0 0; font-size:14px; }
-    .settings-card { background:#fff; border-radius:15px; padding:16px; box-shadow:0 1px 6px rgba(16,42,67,.055); }.settings-card h3 { margin:0; font-size:16px; }.settings-card p { color:var(--muted); font-size:13px; margin:5px 0 14px; line-height:1.4; }.theme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }.theme-option { min-height:52px; border:1px solid var(--line); border-radius:11px; background:#fff; color:var(--ink); font-size:12px; font-weight:700; }.theme-option.active { border-color:var(--blue); background:#e6f7f4; color:var(--blue); }.theme-dot { display:block; width:20px; height:20px; border-radius:50%; margin:0 auto 4px; }.session-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }.session-row .sub { white-space:normal; }.action-button { border:0; padding:10px 12px; border-radius:10px; background:var(--blue); color:#fff; font-size:13px; font-weight:750; white-space:nowrap; }.action-button.secondary { background:#e6edf3; color:var(--ink); }
+    .settings-card { background:#fff; border-radius:15px; padding:16px; box-shadow:0 1px 6px rgba(16,42,67,.055); }.settings-card h3 { margin:0; font-size:16px; }.settings-card p { color:var(--muted); font-size:13px; margin:5px 0 14px; line-height:1.4; }.theme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }.theme-option { min-height:52px; border:1px solid var(--line); border-radius:11px; background:#fff; color:var(--ink); font-size:12px; font-weight:700; }.theme-option.active { border-color:var(--blue); background:#e6f7f4; color:var(--blue); }.theme-dot { display:block; width:20px; height:20px; border-radius:50%; margin:0 auto 4px; }.session-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }.session-row .sub { white-space:normal; }.action-button { border:0; padding:10px 12px; border-radius:10px; background:var(--blue); color:#fff; font-size:13px; font-weight:750; white-space:nowrap; }.action-button.secondary { background:#e6edf3; color:var(--ink); }.app.text-large .name { font-size:18px; }.app.text-large .sub,.app.text-large .phone,.app.text-large .client-date { font-size:14px; }.app.text-large .section-head h2 { font-size:21px; }.app.text-large .brand-copy strong { font-size:20px; }
     .empty { margin:15px 20px; background:white; border-radius:15px; padding:24px 18px; text-align:center; color:var(--muted); }.empty strong { display:block; color:var(--ink); margin-bottom:5px; }
     .fab { border:0; background:var(--blue); color:white; border-radius:25px; padding:13px 18px; font-size:14px; font-weight:750; position:fixed; max-width:480px; bottom:82px; right:max(20px,calc(50% - 240px)); box-shadow:0 6px 18px rgba(14,116,144,.28); }
     .tabs { position:fixed; width:min(520px,100%); bottom:0; left:50%; transform:translateX(-50%); height:calc(67px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:white; display:flex; border-top:1px solid #e6edf3; }.tab { border:0; background:white; color:#94a3b8; flex:1 1 0; min-width:0; display:grid; place-items:center; align-content:center; gap:2px; font-size:10px; line-height:1.05; }.tab span:last-child { max-width:100%; overflow-wrap:anywhere; }.tab .icon { font-size:16px; line-height:18px; }.tab.active { color:var(--blue); font-weight:750; }
@@ -43,7 +43,7 @@
 </head>
 <body>
   <main class="app">
-    <header class="topbar"><div class="brand-logo"><img src="jonas-clima-pro-logo.jpeg" alt="Logo Jonas Clima Pro"></div><div class="brand-copy"><strong>Gestión de servicios técnicos</strong><span>Agenda, clientes, diagnósticos, facturas y reclamaciones.</span></div></header>
+    <header class="topbar"><button id="headerSettings" class="header-menu" type="button" aria-label="Abrir configuración">⋮</button><div class="brand-main"><div class="brand-logo"><img src="jonas-clima-pro-icon.png" alt="Símbolo Jonas Clima Pro"></div><div class="brand-copy"><strong>Jonas Clima Pro</strong><span>Técnico en refrigeración</span></div></div><div class="service-tags" aria-label="Especialidades"><span>Aires acondicionados</span><span>Neveras</span><span>Mantenimiento</span></div><a class="header-phone" href="https://wa.me/18298625380" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp al 829-862-5380"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M8.3 9.1c.2-.5.5-.5.8-.5h.5c.2 0 .4.1.5.4l.6 1.4c.1.2.1.4 0 .6l-.5.6c.6 1.1 1.5 1.9 2.6 2.5l.6-.5c.2-.1.4-.1.6 0l1.4.7c.2.1.3.3.3.5v.4c0 .4-.2.7-.6.8-1 .2-2.5-.2-4.1-1.4-1.5-1.1-2.5-2.5-2.8-3.7-.2-.8-.1-1.4.1-1.8Z" fill="currentColor"/></svg><span>829-862-5380</span></a></header>
     <section id="content" aria-live="polite"></section>
     <button id="addButton" class="fab" type="button">+ Nueva cita</button>
     <nav class="tabs" aria-label="Navegación principal">
@@ -87,20 +87,30 @@
     let state; try { state = JSON.parse(localStorage.getItem('jonas-clima-pro')) || copy(defaults); } catch { state = copy(defaults); }
     if (!Array.isArray(state.invoices)) state.invoices = [];
     if (!Array.isArray(state.claims)) state.claims = [];
-    if (!state.settings) state.settings = { theme:'azul' };
-    if (!state.session) state.session = { signedIn:true, name:'Jonas Clima Pro', email:'jonaskings@icloud.com' };
+    if (!state.settings) state.settings = { theme:'azul', background:'claro', textSize:'normal' };
+    if (!state.settings.background) state.settings.background = 'claro';
+    if (!state.settings.textSize) state.settings.textSize = 'normal';
     let activeTab = 'agenda'; let modalType = null;
     const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
     const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+    const formatDate = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'}) : '';
     const persist = () => localStorage.setItem('jonas-clima-pro', JSON.stringify(state));
     const themes = {
       azul: { ink:'#102a43', blue:'#0e7490', mint:'#26c6a2', paper:'#f5f7fa' },
       turquesa: { ink:'#134e4a', blue:'#0f766e', mint:'#5eead4', paper:'#f0fdfa' },
-      noche: { ink:'#172554', blue:'#4338ca', mint:'#a5b4fc', paper:'#f5f3ff' }
+      noche: { ink:'#172554', blue:'#4338ca', mint:'#a5b4fc', paper:'#f5f3ff' },
+      verde: { ink:'#14532d', blue:'#15803d', mint:'#86efac', paper:'#f0fdf4' },
+      morado: { ink:'#3b0764', blue:'#7e22ce', mint:'#d8b4fe', paper:'#faf5ff' },
+      coral: { ink:'#7c2d12', blue:'#c2410c', mint:'#fdba74', paper:'#fff7ed' },
+      negro: { ink:'#111111', blue:'#2563eb', mint:'#67e8f9', paper:'#f4f4f5' },
+      blanco: { ink:'#1e3a5f', blue:'#0e7490', mint:'#26c6a2', paper:'#ffffff' }
     };
+    const backgrounds = { claro:'#dbe8ef', hielo:'#c4e8f5', oscuro:'#111827', azul:'#075985', verde:'#14532d', morado:'#3b0764', negro:'#000000', blanco:'#ffffff' };
     function applyTheme() {
       const theme = themes[state.settings.theme] || themes.azul;
       Object.entries(theme).forEach(([key,value]) => document.documentElement.style.setProperty(`--${key}`,value));
+      document.documentElement.style.setProperty('--wallpaper', backgrounds[state.settings.background] || backgrounds.claro);
+      document.querySelector('.app').classList.toggle('text-large', state.settings.textSize === 'large');
     }
     function heading(title, hint) { return `<div class="section-head"><h2>${title}</h2><span>${hint}</span></div>`; }
     function render() {
@@ -133,9 +143,25 @@
       persist(); render(); toast('Cita eliminada');
     }
     function renderClients() {
-      content.innerHTML = `${heading('Clientes',`${state.clients.length} registrados`)}<div class="list">${state.clients.length ? state.clients.map(c => `<article class="client-card"><button class="client-open" data-detail="client" data-id="${c.id}" type="button"><span class="avatar">${escape(c.name.charAt(0).toUpperCase())}</span><span class="grow"><span class="name">${escape(c.name)}</span><span class="sub">${escape(c.equipment || 'Equipo pendiente')}</span><span class="phone">${escape(c.phone)}</span></span><span class="arrow">›</span></button><button class="delete-button" data-delete-client="${c.id}" type="button">Eliminar</button></article>`).join('') : empty('Aún no hay clientes','Añade el primero para crear su ficha.')}</div>`;
+      content.innerHTML = `${heading('Clientes',`${state.clients.length} registrados`)}<div class="list">${state.clients.length ? state.clients.map(c => `<article class="client-card"><button class="client-open" data-detail="client" data-id="${c.id}" type="button"><span class="avatar">${escape(c.name.charAt(0).toUpperCase())}</span><span class="grow"><span class="name">${escape(c.name)}</span><span class="sub">${escape(c.equipment || 'Equipo pendiente')}</span><span class="phone">${escape(c.phone)}</span>${c.nextVisit ? `<span class="client-date">Próxima visita: ${escape(formatDate(c.nextVisit))}</span>` : ''}</span><span class="arrow">›</span></button><div class="client-actions"><button class="date-button" data-set-client-date="${c.id}" type="button">${c.nextVisit ? 'Cambiar fecha' : 'Poner fecha'}</button>${c.nextVisit ? `<button class="date-button" data-remove-client-date="${c.id}" type="button">Quitar fecha</button>` : ''}<button class="delete-button" data-delete-client="${c.id}" type="button">Eliminar</button></div></article>`).join('') : empty('Aún no hay clientes','Añade el primero para crear su ficha.')}</div>`;
       bindDetails();
       document.querySelectorAll('[data-delete-client]').forEach(button => button.addEventListener('click', () => deleteClient(button.dataset.deleteClient)));
+      document.querySelectorAll('[data-set-client-date]').forEach(button => button.addEventListener('click', () => setClientDate(button.dataset.setClientDate)));
+      document.querySelectorAll('[data-remove-client-date]').forEach(button => button.addEventListener('click', () => removeClientDate(button.dataset.removeClientDate)));
+    }
+    function setClientDate(id) {
+      const client = state.clients.find(item => item.id === id);
+      if (!client) return;
+      const date = prompt(`Fecha de próxima visita para ${client.name} (AAAA-MM-DD):`, client.nextVisit || '');
+      if (date === null) return;
+      const value = date.trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(new Date(`${value}T00:00:00`).getTime())) { toast('Usa el formato AAAA-MM-DD'); return; }
+      client.nextVisit = value; persist(); render(); toast('Fecha guardada');
+    }
+    function removeClientDate(id) {
+      const client = state.clients.find(item => item.id === id);
+      if (!client || !confirm(`¿Quitar la fecha de próxima visita de ${client.name}?`)) return;
+      delete client.nextVisit; persist(); render(); toast('Fecha eliminada');
     }
     function deleteClient(id) {
       const client = state.clients.find(item => item.id === id);
@@ -171,10 +197,10 @@
       bindDetails();
     }
     function renderSettings() {
-      const signedIn = state.session.signedIn;
-      content.innerHTML = `${heading('Configuración','Personaliza la aplicación')}<div class="list"><section class="settings-card"><h3>Apariencia</h3><p>Elige el color principal de la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.theme === 'azul' ? 'active' : ''}" data-theme="azul" type="button"><span class="theme-dot" style="background:#0e7490"></span>Azul</button><button class="theme-option ${state.settings.theme === 'turquesa' ? 'active' : ''}" data-theme="turquesa" type="button"><span class="theme-dot" style="background:#0f766e"></span>Turquesa</button><button class="theme-option ${state.settings.theme === 'noche' ? 'active' : ''}" data-theme="noche" type="button"><span class="theme-dot" style="background:#4338ca"></span>Noche</button></div></section><section class="settings-card"><h3>Sesión</h3><p>${signedIn ? 'Sesión local activa en este dispositivo.' : 'No hay una sesión local activa.'}</p><div class="session-row"><div><div class="name">${escape(state.session.name)}</div><div class="sub">${escape(state.session.email)}</div></div><button id="sessionButton" class="action-button ${signedIn ? 'secondary' : ''}" type="button">${signedIn ? 'Cerrar sesión' : 'Iniciar sesión'}</button></div></section><section class="settings-card"><h3>Jonas Clima Pro</h3><p>Versión de demostración. Los datos se guardan en este dispositivo.</p></section></div>`;
+      content.innerHTML = `${heading('Configuración','Personaliza la aplicación')}<div class="list"><section class="settings-card"><h3>Temas</h3><p>Elige el color principal de la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.theme === 'azul' ? 'active' : ''}" data-theme="azul" type="button"><span class="theme-dot" style="background:#0e7490"></span>Azul</button><button class="theme-option ${state.settings.theme === 'turquesa' ? 'active' : ''}" data-theme="turquesa" type="button"><span class="theme-dot" style="background:#0f766e"></span>Turquesa</button><button class="theme-option ${state.settings.theme === 'noche' ? 'active' : ''}" data-theme="noche" type="button"><span class="theme-dot" style="background:#4338ca"></span>Noche</button><button class="theme-option ${state.settings.theme === 'verde' ? 'active' : ''}" data-theme="verde" type="button"><span class="theme-dot" style="background:#15803d"></span>Verde</button><button class="theme-option ${state.settings.theme === 'morado' ? 'active' : ''}" data-theme="morado" type="button"><span class="theme-dot" style="background:#7e22ce"></span>Morado</button><button class="theme-option ${state.settings.theme === 'coral' ? 'active' : ''}" data-theme="coral" type="button"><span class="theme-dot" style="background:#c2410c"></span>Coral</button><button class="theme-option ${state.settings.theme === 'negro' ? 'active' : ''}" data-theme="negro" type="button"><span class="theme-dot" style="background:#000"></span>Negro</button><button class="theme-option ${state.settings.theme === 'blanco' ? 'active' : ''}" data-theme="blanco" type="button"><span class="theme-dot" style="background:#fff;border:1px solid #cbd5e1"></span>Blanco</button></div></section><section class="settings-card"><h3>Fondo de pantalla</h3><p>Cambia el fondo que rodea la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.background === 'claro' ? 'active' : ''}" data-background="claro" type="button"><span class="theme-dot" style="background:#dbe8ef"></span>Claro</button><button class="theme-option ${state.settings.background === 'hielo' ? 'active' : ''}" data-background="hielo" type="button"><span class="theme-dot" style="background:#c4e8f5"></span>Hielo</button><button class="theme-option ${state.settings.background === 'oscuro' ? 'active' : ''}" data-background="oscuro" type="button"><span class="theme-dot" style="background:#111827"></span>Oscuro</button><button class="theme-option ${state.settings.background === 'azul' ? 'active' : ''}" data-background="azul" type="button"><span class="theme-dot" style="background:#075985"></span>Azul</button><button class="theme-option ${state.settings.background === 'verde' ? 'active' : ''}" data-background="verde" type="button"><span class="theme-dot" style="background:#14532d"></span>Verde</button><button class="theme-option ${state.settings.background === 'morado' ? 'active' : ''}" data-background="morado" type="button"><span class="theme-dot" style="background:#3b0764"></span>Morado</button><button class="theme-option ${state.settings.background === 'negro' ? 'active' : ''}" data-background="negro" type="button"><span class="theme-dot" style="background:#000"></span>Negro</button><button class="theme-option ${state.settings.background === 'blanco' ? 'active' : ''}" data-background="blanco" type="button"><span class="theme-dot" style="background:#fff;border:1px solid #cbd5e1"></span>Blanco</button></div></section><section class="settings-card"><h3>Letras</h3><p>Ajusta el tamaño para leer con más comodidad.</p><div class="theme-grid"><button class="theme-option ${state.settings.textSize === 'normal' ? 'active' : ''}" data-text-size="normal" type="button">Normal</button><button class="theme-option ${state.settings.textSize === 'large' ? 'active' : ''}" data-text-size="large" type="button">Grande</button></div></section><section class="settings-card"><h3>Jonas Clima Pro</h3><p>Versión de demostración. Los datos se guardan en este dispositivo.</p></section></div>`;
       document.querySelectorAll('[data-theme]').forEach(button => button.addEventListener('click', () => { state.settings.theme = button.dataset.theme; persist(); applyTheme(); render(); toast('Tema actualizado'); }));
-      document.getElementById('sessionButton').addEventListener('click', () => { state.session.signedIn = !state.session.signedIn; persist(); render(); toast(state.session.signedIn ? 'Sesión iniciada' : 'Sesión cerrada'); });
+      document.querySelectorAll('[data-background]').forEach(button => button.addEventListener('click', () => { state.settings.background = button.dataset.background; persist(); applyTheme(); render(); toast('Fondo actualizado'); }));
+      document.querySelectorAll('[data-text-size]').forEach(button => button.addEventListener('click', () => { state.settings.textSize = button.dataset.textSize; persist(); applyTheme(); render(); toast('Tamaño de letras actualizado'); }));
     }
     function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
     function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
@@ -186,7 +212,7 @@
     }
     const fields = {
       appointment: [['client','Cliente *','Nombre del cliente','text'],['time','Hora *','Ej. 10:30','time'],['service','Tipo de servicio *','Mantenimiento, reparación...','text']],
-      client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text']],
+      client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text'],['nextVisit','Próxima visita','Selecciona una fecha','date']],
       diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']],
       invoice: [['client','Cliente *','Nombre del cliente','text'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (RD$) *','Ej. 8,900.00','number']],
       claim: [['client','Cliente *','Nombre del cliente','text'],['subject','Asunto *','Ej. Incidencia con la instalación','text'],['description','Detalle *','Describe la reclamación','textarea']]
@@ -211,6 +237,7 @@
     }
     let toastTimer; function toast(message) { const el=document.getElementById('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
     document.querySelectorAll('.tab').forEach(button => button.addEventListener('click',()=>{ activeTab=button.dataset.tab; render(); }));
+    document.getElementById('headerSettings').addEventListener('click',()=>{ activeTab='settings'; render(); });
     document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : activeTab === 'diagnostics' ? 'diagnostic' : activeTab === 'invoices' ? 'invoice' : 'claim'));
     document.getElementById('cancelButton').addEventListener('click',closeModal); document.getElementById('saveButton').addEventListener('click',save);
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
