@@ -226,7 +226,7 @@
     function showDetail(kind, id) {
       const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : kind === 'invoice' ? 'invoices' : 'claims'].find(i => i.id === id);
       if (!item) return;
-      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
+      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}${item.address ? `\n\nDirección: ${item.address}\nVivienda: ${item.housingType || 'No especificada'}${item.housingDetails ? `\nDetalles: ${item.housingDetails}` : ''}` : ''}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
       alert(`${item.client || item.name}\n\n${details}`);
     }
     const fields = {
@@ -277,7 +277,7 @@
       if (!window.jonasCloud || !cloudUser) return;
       stopCloudOrders?.();
       stopCloudOrders = jonasCloud.db.collection('orders').onSnapshot(snapshot => {
-        cloudOrders = snapshot.docs.map(doc => { const order = doc.data(); return { id:`cloud-${doc.id}`, remoteId:doc.id, client:order.clientName || 'Cliente', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, status:order.status || 'Pendiente' }; });
+        cloudOrders = snapshot.docs.map(doc => { const order = doc.data(); return { id:`cloud-${doc.id}`, remoteId:doc.id, client:order.clientName || 'Cliente', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' }; });
         render();
       }, () => { cloudOrders = []; if (activeTab === 'agenda') render(); });
     }
