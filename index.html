@@ -62,6 +62,10 @@
     </section>
   </div>
   <div class="toast" id="toast" role="status"></div>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script>
     const defaults = {
       clients: [
@@ -90,7 +94,7 @@
     if (!state.settings) state.settings = { theme:'azul', background:'claro', textSize:'normal' };
     if (!state.settings.background) state.settings.background = 'claro';
     if (!state.settings.textSize) state.settings.textSize = 'normal';
-    let activeTab = 'agenda'; let modalType = null;
+    let activeTab = 'agenda'; let modalType = null; let cloudOrders = []; let stopCloudOrders = null; let cloudUser = null;
     const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
     const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
     const formatDate = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'}) : '';
@@ -124,19 +128,31 @@
       if (activeTab === 'settings') { add.style.display = 'none'; renderSettings(); } else { add.style.display = ''; }
     }
     function renderAgenda() {
-      const items = [...state.appointments].sort((a,b)=>a.time.localeCompare(b.time));
+      const items = [...state.appointments, ...cloudOrders].sort((a,b)=>String(a.time).localeCompare(String(b.time)));
       content.innerHTML = `<section class="hero"><div class="eyebrow">AGENDA DE HOY</div><h1>${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h1><p>${items.length} visitas programadas</p></section>${heading('Próximas visitas','Toca una visita para ver detalles')}<div class="list">${items.length ? items.map(a => `<article class="row-card"><button class="appointment-open" data-detail="appointment" data-id="${a.id}" type="button"><span class="time">${escape(a.time)}</span><span class="grow"><span class="name">${escape(a.client)}</span><span class="sub">${escape(a.service)}</span></span></button><button class="status status-button ${a.status === 'Confirmada' ? 'confirmed' : ''}" data-toggle-appointment="${a.id}" type="button" aria-label="Cambiar estado de la cita">${escape(a.status)}</button><button class="delete-button" data-delete-appointment="${a.id}" type="button">Eliminar</button></article>`).join('') : empty('No hay citas hoy','Añade la primera visita desde el botón azul.')}</div>`;
       bindDetails();
       document.querySelectorAll('[data-delete-appointment]').forEach(button => button.addEventListener('click', () => deleteAppointment(button.dataset.deleteAppointment)));
       document.querySelectorAll('[data-toggle-appointment]').forEach(button => button.addEventListener('click', () => toggleAppointmentStatus(button.dataset.toggleAppointment)));
     }
-    function toggleAppointmentStatus(id) {
+    async function toggleAppointmentStatus(id) {
+      const remote = cloudOrders.find(item => item.id === id);
+      if (remote && window.jonasCloud) {
+        const status = remote.status === 'Confirmada' ? 'Pendiente' : 'Confirmada';
+        try { await jonasCloud.db.collection('orders').doc(remote.remoteId).update({status, updatedAt: jonasCloud.firebase.firestore.FieldValue.serverTimestamp()}); toast(`Pedido ${status.toLowerCase()}`); } catch { toast('No se pudo actualizar el pedido'); }
+        return;
+      }
       const appointment = state.appointments.find(item => item.id === id);
       if (!appointment) return;
       appointment.status = appointment.status === 'Confirmada' ? 'Pendiente' : 'Confirmada';
       persist(); render(); toast(`Cita ${appointment.status.toLowerCase()}`);
     }
-    function deleteAppointment(id) {
+    async function deleteAppointment(id) {
+      const remote = cloudOrders.find(item => item.id === id);
+      if (remote && window.jonasCloud) {
+        if (!confirm(`¿Eliminar el pedido de ${remote.client}?`)) return;
+        try { await jonasCloud.db.collection('orders').doc(remote.remoteId).delete(); toast('Pedido eliminado'); } catch { toast('No se pudo eliminar el pedido'); }
+        return;
+      }
       const appointment = state.appointments.find(item => item.id === id);
       if (!appointment || !confirm(`¿Eliminar la cita de ${appointment.client} a las ${appointment.time}?`)) return;
       state.appointments = state.appointments.filter(item => item.id !== id);
@@ -197,10 +213,13 @@
       bindDetails();
     }
     function renderSettings() {
-      content.innerHTML = `${heading('Configuración','Personaliza la aplicación')}<div class="list"><section class="settings-card"><h3>Temas</h3><p>Elige el color principal de la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.theme === 'azul' ? 'active' : ''}" data-theme="azul" type="button"><span class="theme-dot" style="background:#0e7490"></span>Azul</button><button class="theme-option ${state.settings.theme === 'turquesa' ? 'active' : ''}" data-theme="turquesa" type="button"><span class="theme-dot" style="background:#0f766e"></span>Turquesa</button><button class="theme-option ${state.settings.theme === 'noche' ? 'active' : ''}" data-theme="noche" type="button"><span class="theme-dot" style="background:#4338ca"></span>Noche</button><button class="theme-option ${state.settings.theme === 'verde' ? 'active' : ''}" data-theme="verde" type="button"><span class="theme-dot" style="background:#15803d"></span>Verde</button><button class="theme-option ${state.settings.theme === 'morado' ? 'active' : ''}" data-theme="morado" type="button"><span class="theme-dot" style="background:#7e22ce"></span>Morado</button><button class="theme-option ${state.settings.theme === 'coral' ? 'active' : ''}" data-theme="coral" type="button"><span class="theme-dot" style="background:#c2410c"></span>Coral</button><button class="theme-option ${state.settings.theme === 'negro' ? 'active' : ''}" data-theme="negro" type="button"><span class="theme-dot" style="background:#000"></span>Negro</button><button class="theme-option ${state.settings.theme === 'blanco' ? 'active' : ''}" data-theme="blanco" type="button"><span class="theme-dot" style="background:#fff;border:1px solid #cbd5e1"></span>Blanco</button></div></section><section class="settings-card"><h3>Fondo de pantalla</h3><p>Cambia el fondo que rodea la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.background === 'claro' ? 'active' : ''}" data-background="claro" type="button"><span class="theme-dot" style="background:#dbe8ef"></span>Claro</button><button class="theme-option ${state.settings.background === 'hielo' ? 'active' : ''}" data-background="hielo" type="button"><span class="theme-dot" style="background:#c4e8f5"></span>Hielo</button><button class="theme-option ${state.settings.background === 'oscuro' ? 'active' : ''}" data-background="oscuro" type="button"><span class="theme-dot" style="background:#111827"></span>Oscuro</button><button class="theme-option ${state.settings.background === 'azul' ? 'active' : ''}" data-background="azul" type="button"><span class="theme-dot" style="background:#075985"></span>Azul</button><button class="theme-option ${state.settings.background === 'verde' ? 'active' : ''}" data-background="verde" type="button"><span class="theme-dot" style="background:#14532d"></span>Verde</button><button class="theme-option ${state.settings.background === 'morado' ? 'active' : ''}" data-background="morado" type="button"><span class="theme-dot" style="background:#3b0764"></span>Morado</button><button class="theme-option ${state.settings.background === 'negro' ? 'active' : ''}" data-background="negro" type="button"><span class="theme-dot" style="background:#000"></span>Negro</button><button class="theme-option ${state.settings.background === 'blanco' ? 'active' : ''}" data-background="blanco" type="button"><span class="theme-dot" style="background:#fff;border:1px solid #cbd5e1"></span>Blanco</button></div></section><section class="settings-card"><h3>Letras</h3><p>Ajusta el tamaño para leer con más comodidad.</p><div class="theme-grid"><button class="theme-option ${state.settings.textSize === 'normal' ? 'active' : ''}" data-text-size="normal" type="button">Normal</button><button class="theme-option ${state.settings.textSize === 'large' ? 'active' : ''}" data-text-size="large" type="button">Grande</button></div></section><section class="settings-card"><h3>Jonas Clima Pro</h3><p>Versión de demostración. Los datos se guardan en este dispositivo.</p></section></div>`;
+      const session = cloudUser ? `<strong>Conectado como ${escape(cloudUser.email || 'administrador')}</strong><p>Los pedidos de clientes se actualizan automáticamente en la agenda.</p><button class="action-button secondary" id="signOutButton" type="button">Cerrar sesión</button>` : `<strong>Conexión privada</strong><p>Inicia sesión con el correo del administrador para recibir pedidos de clientes en tiempo real.</p><button class="action-button" id="signInButton" type="button">Conectar agenda</button>`;
+      content.innerHTML = `${heading('Configuración','Personaliza la aplicación')}<div class="list"><section class="settings-card"><h3>Conexión segura</h3>${session}</section><section class="settings-card"><h3>Temas</h3><p>Elige el color principal de la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.theme === 'azul' ? 'active' : ''}" data-theme="azul" type="button"><span class="theme-dot" style="background:#0e7490"></span>Azul</button><button class="theme-option ${state.settings.theme === 'turquesa' ? 'active' : ''}" data-theme="turquesa" type="button"><span class="theme-dot" style="background:#0f766e"></span>Turquesa</button><button class="theme-option ${state.settings.theme === 'noche' ? 'active' : ''}" data-theme="noche" type="button"><span class="theme-dot" style="background:#4338ca"></span>Noche</button><button class="theme-option ${state.settings.theme === 'verde' ? 'active' : ''}" data-theme="verde" type="button"><span class="theme-dot" style="background:#15803d"></span>Verde</button><button class="theme-option ${state.settings.theme === 'morado' ? 'active' : ''}" data-theme="morado" type="button"><span class="theme-dot" style="background:#7e22ce"></span>Morado</button><button class="theme-option ${state.settings.theme === 'coral' ? 'active' : ''}" data-theme="coral" type="button"><span class="theme-dot" style="background:#c2410c"></span>Coral</button><button class="theme-option ${state.settings.theme === 'negro' ? 'active' : ''}" data-theme="negro" type="button"><span class="theme-dot" style="background:#000"></span>Negro</button><button class="theme-option ${state.settings.theme === 'blanco' ? 'active' : ''}" data-theme="blanco" type="button"><span class="theme-dot" style="background:#fff;border:1px solid #cbd5e1"></span>Blanco</button></div></section><section class="settings-card"><h3>Fondo de pantalla</h3><p>Cambia el fondo que rodea la aplicación.</p><div class="theme-grid"><button class="theme-option ${state.settings.background === 'claro' ? 'active' : ''}" data-background="claro" type="button"><span class="theme-dot" style="background:#dbe8ef"></span>Claro</button><button class="theme-option ${state.settings.background === 'hielo' ? 'active' : ''}" data-background="hielo" type="button"><span class="theme-dot" style="background:#c4e8f5"></span>Hielo</button><button class="theme-option ${state.settings.background === 'oscuro' ? 'active' : ''}" data-background="oscuro" type="button"><span class="theme-dot" style="background:#111827"></span>Oscuro</button><button class="theme-option ${state.settings.background === 'azul' ? 'active' : ''}" data-background="azul" type="button"><span class="theme-dot" style="background:#075985"></span>Azul</button><button class="theme-option ${state.settings.background === 'verde' ? 'active' : ''}" data-background="verde" type="button"><span class="theme-dot" style="background:#14532d"></span>Verde</button><button class="theme-option ${state.settings.background === 'morado' ? 'active' : ''}" data-background="morado" type="button"><span class="theme-dot" style="background:#3b0764"></span>Morado</button><button class="theme-option ${state.settings.background === 'negro' ? 'active' : ''}" data-background="negro" type="button"><span class="theme-dot" style="background:#000"></span>Negro</button><button class="theme-option ${state.settings.background === 'blanco' ? 'active' : ''}" data-background="blanco" type="button"><span class="theme-dot" style="background:#fff;border:1px solid #cbd5e1"></span>Blanco</button></div></section><section class="settings-card"><h3>Letras</h3><p>Ajusta el tamaño para leer con más comodidad.</p><div class="theme-grid"><button class="theme-option ${state.settings.textSize === 'normal' ? 'active' : ''}" data-text-size="normal" type="button">Normal</button><button class="theme-option ${state.settings.textSize === 'large' ? 'active' : ''}" data-text-size="large" type="button">Grande</button></div></section></div>`;
       document.querySelectorAll('[data-theme]').forEach(button => button.addEventListener('click', () => { state.settings.theme = button.dataset.theme; persist(); applyTheme(); render(); toast('Tema actualizado'); }));
       document.querySelectorAll('[data-background]').forEach(button => button.addEventListener('click', () => { state.settings.background = button.dataset.background; persist(); applyTheme(); render(); toast('Fondo actualizado'); }));
       document.querySelectorAll('[data-text-size]').forEach(button => button.addEventListener('click', () => { state.settings.textSize = button.dataset.textSize; persist(); applyTheme(); render(); toast('Tamaño de letras actualizado'); }));
+      document.getElementById('signInButton')?.addEventListener('click', () => openModal('session'));
+      document.getElementById('signOutButton')?.addEventListener('click', async () => { if (window.jonasCloud) await jonasCloud.auth.signOut(); });
     }
     function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
     function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
@@ -212,19 +231,32 @@
     }
     const fields = {
       appointment: [['client','Cliente *','Nombre del cliente','text'],['time','Hora *','Ej. 10:30','time'],['service','Tipo de servicio *','Mantenimiento, reparación...','text']],
+      session: [['email','Correo del administrador *','jonaskings@icloud.com','email'],['password','Contraseña *','Tu contraseña segura','password']],
       client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text'],['nextVisit','Próxima visita','Selecciona una fecha','date']],
       diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']],
       invoice: [['client','Cliente *','Nombre del cliente','text'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (RD$) *','Ej. 8,900.00','number']],
       claim: [['client','Cliente *','Nombre del cliente','text'],['subject','Asunto *','Ej. Incidencia con la instalación','text'],['description','Detalle *','Describe la reclamación','textarea']]
     };
     function openModal(type) {
-      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación'}; document.getElementById('modalTitle').textContent = titles[type];
+      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación',session:'Conectar agenda'}; document.getElementById('modalTitle').textContent = titles[type];
       form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('');
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>form.querySelector('input,textarea').focus(),100);
     }
     function closeModal() { modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalType=null; }
-    function save() {
+    async function save() {
       const data = Object.fromEntries(new FormData(form));
+      if (modalType === 'session') {
+        if (!data.email || !data.password) { toast('Escribe tu correo y contraseña'); return; }
+        try {
+          await jonasCloud.auth.signInWithEmailAndPassword(data.email.trim(), data.password);
+          closeModal(); toast('Agenda conectada');
+        } catch (error) {
+          if (error.code === 'auth/user-not-found') {
+            try { await jonasCloud.auth.createUserWithEmailAndPassword(data.email.trim(), data.password); closeModal(); toast('Cuenta de administrador creada'); } catch { toast('No se pudo crear la cuenta. Revisa tus datos.'); }
+          } else toast('No se pudo iniciar sesión. Revisa tus datos.');
+        }
+        return;
+      }
       const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : modalType === 'diagnostic' ? ['client','result'] : modalType === 'invoice' ? ['client','concept','amount'] : ['client','subject','description'];
       if (required.some(key => !String(data[key] || '').trim())) { toast('Completa los campos marcados con *'); return; }
       const id = String(Date.now());
@@ -241,10 +273,18 @@
     document.getElementById('addButton').addEventListener('click',()=>openModal(activeTab === 'agenda' ? 'appointment' : activeTab === 'clients' ? 'client' : activeTab === 'diagnostics' ? 'diagnostic' : activeTab === 'invoices' ? 'invoice' : 'claim'));
     document.getElementById('cancelButton').addEventListener('click',closeModal); document.getElementById('saveButton').addEventListener('click',save);
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
+    function startCloudOrders() {
+      if (!window.jonasCloud || !cloudUser) return;
+      stopCloudOrders?.();
+      stopCloudOrders = jonasCloud.db.collection('orders').onSnapshot(snapshot => {
+        cloudOrders = snapshot.docs.map(doc => { const order = doc.data(); return { id:`cloud-${doc.id}`, remoteId:doc.id, client:order.clientName || 'Cliente', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, status:order.status || 'Pendiente' }; });
+        render();
+      }, () => { cloudOrders = []; if (activeTab === 'agenda') render(); });
+    }
+    if (window.jonasCloud) jonasCloud.auth.onAuthStateChanged(user => { cloudUser = user; if (user) startCloudOrders(); else { stopCloudOrders?.(); stopCloudOrders=null; cloudOrders=[]; } if (activeTab === 'settings' || activeTab === 'agenda') render(); });
     if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
     applyTheme();
     render();
   </script>
 </body>
 </html>
-
