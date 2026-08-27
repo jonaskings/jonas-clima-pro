@@ -1,1 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#102a43"/><rect x="76" y="76" width="360" height="360" rx="100" fill="#26c6a2"/><path fill="#102a43" d="M150 169h45v114c0 31 19 48 48 48 25 0 45-14 45-45V169h45v121c0 61-43 87-94 87-56 0-99-30-99-93V169z"/><path fill="#102a43" d="M329 243l-40 45 45 55h-55l-45-57 46-52z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Jonas Clima Pro">
+  <defs>
+    <linearGradient id="cold" x1="70" y1="50" x2="450" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102A43"/>
+      <stop offset="1" stop-color="#0E7490"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#cold)"/>
+  <circle cx="256" cy="256" r="166" fill="#0B3A55" opacity=".38"/>
+  <g fill="none" stroke="#C7F9FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="30">
+    <path d="M256 104v304M124 180l264 152M124 332l264-152"/>
+    <path d="M256 104l-48 48M256 104l48 48M256 408l-48-48M256 408l48-48M124 180l66 18M124 180l18 66M388 332l-66-18M388 332l-18-66M124 332l18-66M124 332l66-18M388 180l-18 66M388 180l-66 18"/>
+  </g>
+  <circle cx="256" cy="256" r="23" fill="#4DE4FF"/>
+</svg>
+
