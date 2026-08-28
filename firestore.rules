@@ -25,5 +25,18 @@ service cloud.firestore {
       allow read: if signedIn() && (resource.data.clientId == request.auth.uid || isAdmin());
       allow update, delete: if isAdmin();
     }
+
+    match /availability/{slotId} {
+      allow read: if signedIn();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        signedIn() &&
+        resource.data.status == 'available' &&
+        request.resource.data.status == 'reserved' &&
+        request.resource.data.reservedBy == request.auth.uid &&
+        request.resource.data.date == resource.data.date &&
+        request.resource.data.time == resource.data.time
+      );
+    }
   }
 }
