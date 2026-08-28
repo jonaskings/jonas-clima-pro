@@ -39,6 +39,15 @@
     .tabs { position:fixed; width:min(520px,100%); bottom:0; left:50%; transform:translateX(-50%); height:calc(67px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:white; display:flex; border-top:1px solid #e6edf3; }.tab { border:0; background:white; color:#94a3b8; flex:1 1 0; min-width:0; display:grid; place-items:center; align-content:center; gap:2px; font-size:10px; line-height:1.05; }.tab span:last-child { max-width:100%; overflow-wrap:anywhere; }.tab .icon { font-size:16px; line-height:18px; }.tab.active { color:var(--blue); font-weight:750; }
     .modal-wrap { position:fixed; inset:0; background:rgba(16,42,67,.42); display:none; align-items:flex-end; justify-content:center; z-index:5; }.modal-wrap.show { display:flex; }.modal { width:min(520px,100%); background:var(--paper); border-radius:22px 22px 0 0; max-height:91dvh; overflow:auto; }.modal-head { position:sticky; top:0; z-index:2; background:white; height:59px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e6edf3; }.modal-head h3 { margin:0; font-size:17px; }.text-btn { background:transparent; border:0; padding:9px 0; color:var(--muted); font-size:15px; }.save { color:var(--blue); font-weight:800; }.form { padding:20px; }.field { display:grid; gap:7px; margin-bottom:19px; }.field label { color:#334e68; font-size:13px; font-weight:750; }.field input,.field textarea { width:100%; background:white; color:var(--ink); border:1px solid var(--line); border-radius:10px; min-height:47px; padding:12px 13px; outline-color:var(--blue); }.field textarea { min-height:112px; resize:vertical; }.required { color:var(--blue); }
     .toast { position:fixed; z-index:9; left:50%; transform:translateX(-50%) translateY(120px); bottom:92px; background:var(--ink); color:white; padding:11px 16px; border-radius:22px; font-size:14px; opacity:0; transition:.25s; white-space:nowrap; }.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+    @media (max-width:480px) {
+      .list { padding-inline:12px; }
+      .row-card { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:9px; padding:12px; overflow:hidden; }
+      .appointment-open { grid-column:1 / -1; width:100%; }
+      .appointment-open .grow { overflow:hidden; }
+      .status-button { grid-column:1; justify-self:start; }
+      .row-card > .delete-button { grid-column:2; justify-self:end; }
+      .fab { right:16px; max-width:calc(100vw - 32px); }
+    }
     @media (min-width:521px) { .fab { right:calc(50% - 240px); } }
   </style>
 </head>
@@ -226,7 +235,8 @@
     function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
     function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
     function showDetail(kind, id) {
-      const item = state[kind === 'appointment' ? 'appointments' : kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : kind === 'invoice' ? 'invoices' : 'claims'].find(i => i.id === id);
+      const collection = kind === 'appointment' ? [...state.appointments, ...cloudOrders] : state[kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : kind === 'invoice' ? 'invoices' : 'claims'];
+      const item = collection.find(i => i.id === id);
       if (!item) return;
       const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}${item.phone ? `\nTeléfono: ${item.phone}` : ''}${item.address ? `\n\nDirección: ${item.address}\nVivienda: ${item.housingType || 'No especificada'}${item.housingDetails ? `\nDetalles: ${item.housingDetails}` : ''}` : ''}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
       alert(`${item.client || item.name}\n\n${details}`);
