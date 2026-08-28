@@ -39,6 +39,7 @@
     .fab { border:0; background:var(--blue); color:white; border-radius:25px; padding:13px 18px; font-size:14px; font-weight:750; position:fixed; max-width:480px; bottom:82px; right:max(20px,calc(50% - 240px)); box-shadow:0 6px 18px rgba(14,116,144,.28); }
     .tabs { position:fixed; width:min(520px,100%); bottom:0; left:50%; transform:translateX(-50%); height:calc(67px + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom); background:white; display:flex; border-top:1px solid #e6edf3; }.tab { border:0; background:white; color:#94a3b8; flex:1 1 0; min-width:0; display:grid; place-items:center; align-content:center; gap:2px; font-size:10px; line-height:1.05; }.tab span:last-child { max-width:100%; overflow-wrap:anywhere; }.tab .icon { font-size:16px; line-height:18px; }.tab.active { color:var(--blue); font-weight:750; }
     .modal-wrap { position:fixed; inset:0; background:rgba(16,42,67,.42); display:none; align-items:flex-end; justify-content:center; z-index:5; }.modal-wrap.show { display:flex; }.modal { width:min(520px,100%); background:var(--paper); border-radius:22px 22px 0 0; max-height:91dvh; overflow:auto; }.modal-head { position:sticky; top:0; z-index:2; background:white; height:59px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e6edf3; }.modal-head h3 { margin:0; font-size:17px; }.text-btn { background:transparent; border:0; padding:9px 0; color:var(--muted); font-size:15px; }.save { color:var(--blue); font-weight:800; }.form { padding:20px; }.field { display:grid; gap:7px; margin-bottom:19px; }.field label { color:#334e68; font-size:13px; font-weight:750; }.field input,.field textarea { width:100%; background:white; color:var(--ink); border:1px solid var(--line); border-radius:10px; min-height:47px; padding:12px 13px; outline-color:var(--blue); }.field textarea { min-height:112px; resize:vertical; }.required { color:var(--blue); }
+    .invoice-line { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; }.invoice-line-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }.invoice-line .field { margin-bottom:10px; }.invoice-line .field:first-child { grid-column:1 / -1; }.invoice-line-remove { border:0; background:#fde8e8; color:#b42318; border-radius:8px; padding:7px 9px; font-size:12px; font-weight:750; }.invoice-summary { background:#eaf6fa; border-radius:12px; padding:12px; margin:14px 0 19px; color:#334e68; font-size:13px; line-height:1.7; }.invoice-summary strong { float:right; color:var(--ink); }.checkbox-field { display:flex; align-items:center; gap:9px; margin:2px 0 18px; color:#334e68; font-size:13px; font-weight:750; }.checkbox-field input { width:19px; height:19px; }
     .toast { position:fixed; z-index:9; left:50%; transform:translateX(-50%) translateY(120px); bottom:92px; background:var(--ink); color:white; padding:11px 16px; border-radius:22px; font-size:14px; opacity:0; transition:.25s; white-space:nowrap; }.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
     @media (max-width:480px) {
       .list { padding-inline:12px; }
@@ -104,7 +105,7 @@
     if (!state.settings) state.settings = { theme:'azul', background:'claro', textSize:'normal' };
     if (!state.settings.background) state.settings.background = 'claro';
     if (!state.settings.textSize) state.settings.textSize = 'normal';
-    let activeTab = 'agenda'; let modalType = null; let modalPreset = {}; let cloudOrders = []; let stopCloudOrders = null; let cloudInvoices = []; let stopCloudInvoices = null; let cloudClaims = []; let stopCloudClaims = null; let cloudUser = null;
+    let activeTab = 'agenda'; let modalType = null; let modalPreset = {}; let invoiceDraftLines = []; let cloudOrders = []; let stopCloudOrders = null; let cloudInvoices = []; let stopCloudInvoices = null; let cloudClaims = []; let stopCloudClaims = null; let cloudUser = null;
     const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
     const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
     const formatDate = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'}) : '';
@@ -149,7 +150,8 @@
     function invoiceOrder(id) {
       const order = cloudOrders.find(item => item.id === id);
       if (!order) return;
-      openModal('invoice',{client:order.client,phone:order.phone,concept:order.service.replace(/^\d{4}-\d{2}-\d{2} · /,''),clientId:order.clientId,orderId:order.remoteId});
+      const lines=(order.items||[]).map(item=>({description:item.name,quantity:1,unitPrice:Number(item.price)||0}));
+      openModal('invoice',{client:order.client,phone:order.phone,address:order.address,lines:lines.length?lines:[{description:order.service.replace(/^\d{4}-\d{2}-\d{2} · /,''),quantity:1,unitPrice:Number(order.total)||0}],clientId:order.clientId,orderId:order.remoteId});
     }
     async function toggleAppointmentStatus(id) {
       const remote = cloudOrders.find(item => item.id === id);
@@ -216,7 +218,7 @@
     function renderInvoices() {
       const currency = new Intl.NumberFormat('es-DO',{style:'currency',currency:'DOP'});
       const items = [...cloudInvoices, ...state.invoices];
-      content.innerHTML = `${heading('Facturas',`${items.length} emitidas`)}<div class="list">${items.length ? items.map(f => `<article class="diagnostic-card"><button class="diagnostic-open" data-detail="invoice" data-id="${f.id}" type="button"><span class="card-top"><span class="name">${escape(f.number)}</span><span class="status ${f.status === 'Pagada' ? 'confirmed' : ''}">${escape(f.status)}</span></span><span class="sub">${escape(f.client)} · ${escape(f.date)}</span><span class="result">${escape(f.concept)}</span><span class="card-top" style="margin-top:12px"><span class="sub">Total</span><span class="name">${currency.format(Number(f.amount) || 0)}</span></span></button><div class="diagnostic-actions"><button class="delete-button" data-delete-invoice="${f.id}" type="button">Eliminar</button></div></article>`).join('') : empty('No hay facturas todavía','Crea la primera factura desde el botón azul.')}</div>`;
+      content.innerHTML = `${heading('Facturas',`${items.length} emitidas`)}<div class="list">${items.length ? items.map(f => `<article class="diagnostic-card"><button class="diagnostic-open" data-detail="invoice" data-id="${f.id}" type="button"><span class="card-top"><span class="name">${escape(f.number)}</span><span class="status ${f.status === 'Pagada' ? 'confirmed' : ''}">${escape(f.status)}</span></span><span class="sub">${escape(f.client)} · ${escape(f.date)}</span>${(f.items||[]).length?`<span class="result">${f.items.map(item=>`${escape(item.description)} — ${escape(item.quantity)} × ${currency.format(Number(item.unitPrice)||0)}`).join('<br>')}</span>`:`<span class="result">${escape(f.concept)}</span>`}<span class="sub" style="margin-top:10px">Subtotal: ${currency.format(Number(f.subtotal??f.amount)||0)}${Number(f.discount)?` · Descuento: −${currency.format(Number(f.discount))}`:''}${Number(f.itbis)?` · ITBIS: ${currency.format(Number(f.itbis))}`:''}</span><span class="card-top" style="margin-top:8px"><span class="sub">Total</span><span class="name">${currency.format(Number(f.amount) || 0)}</span></span></button><div class="diagnostic-actions"><button class="delete-button" data-delete-invoice="${f.id}" type="button">Eliminar</button></div></article>`).join('') : empty('No hay facturas todavía','Crea la primera factura desde el botón azul.')}</div>`;
       bindDetails();
       document.querySelectorAll('[data-delete-invoice]').forEach(button => button.addEventListener('click', () => deleteInvoice(button.dataset.deleteInvoice)));
     }
@@ -252,7 +254,8 @@
       const collection = kind === 'appointment' ? [...state.appointments, ...cloudOrders] : kind === 'invoice' ? [...cloudInvoices, ...state.invoices] : kind === 'claim' ? [...cloudClaims, ...state.claims] : state[kind === 'client' ? 'clients' : 'diagnostics'];
       const item = collection.find(i => i.id === id);
       if (!item) return;
-      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}${item.phone ? `\nTeléfono: ${item.phone}` : ''}${item.address ? `\n\nDirección: ${item.address}\nVivienda: ${item.housingType || 'No especificada'}${item.housingDetails ? `\nDetalles: ${item.housingDetails}` : ''}` : ''}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
+      const invoiceLines=(item.items||[]).map(line=>`${line.description}: ${line.quantity} × ${Number(line.unitPrice||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}`).join('\n');
+      const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}${item.phone ? `\nTeléfono: ${item.phone}` : ''}${item.address ? `\n\nDirección: ${item.address}\nVivienda: ${item.housingType || 'No especificada'}${item.housingDetails ? `\nDetalles: ${item.housingDetails}` : ''}` : ''}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}${item.ncf?`\nNCF: ${item.ncf}`:''}\n\n${invoiceLines||item.concept}\n\nSubtotal: ${Number(item.subtotal ?? item.amount ?? 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nDescuento: ${Number(item.discount||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nITBIS (${Number(item.itbisRate||0)}%): ${Number(item.itbis||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nTotal: ${Number(item.amount||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nMétodo de pago: ${item.paymentMethod||'Pendiente'}${item.dueDate?`\nVence: ${item.dueDate}`:''}${item.notes?`\n\nNotas: ${item.notes}`:''}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
       alert(`${item.client || item.name}\n\n${details}`);
     }
     const fields = {
@@ -260,19 +263,36 @@
       session: [['email','Correo del administrador *','8298625380mr@gmail.com','email'],['password','Contraseña *','Tu contraseña segura','password']],
       client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text'],['nextVisit','Próxima visita','Selecciona una fecha','date']],
       diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']],
-      invoice: [['client','Cliente *','Nombre del cliente','text'],['phone','Teléfono del cliente','Ej. 829-000-0000','tel'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (RD$) *','Ej. 8,900.00','number']],
+      invoice: [['client','Cliente *','Nombre del cliente','text'],['phone','Teléfono del cliente','Ej. 829-000-0000','tel'],['address','Dirección','Dirección del cliente','text'],['ncf','NCF / comprobante fiscal','Opcional','text'],['dueDate','Fecha de vencimiento','Selecciona una fecha','date'],['paymentMethod','Método de pago','Efectivo, transferencia o tarjeta','text'],['discount','Descuento (RD$)','0.00','number'],['notes','Notas','Garantía, condiciones u observaciones','textarea']],
       claim: [['client','Cliente *','Nombre del cliente','text'],['subject','Asunto *','Ej. Incidencia con la instalación','text'],['description','Detalle *','Describe la reclamación','textarea']]
     };
     function openModal(type, preset = {}) {
       modalType = type; modalPreset = preset; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación',session:'Conectar agenda'}; document.getElementById('modalTitle').textContent = titles[type];
       form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('') + (type === 'session' ? '<button class="action-button secondary" id="resetPasswordButton" type="button">Olvidé mi contraseña</button>' : '');
       Object.entries(preset).forEach(([name,value]) => { const input=form.elements.namedItem(name); if(input) input.value=value || ''; });
+      if (type === 'invoice') {
+        invoiceDraftLines=(preset.lines||[{description:'',quantity:1,unitPrice:0}]).map(item=>({...item}));
+        form.insertAdjacentHTML('beforeend','<div class="field"><label>Servicios y materiales *</label><div id="invoiceLines"></div><button class="action-button secondary" id="addInvoiceLine" type="button">+ Agregar concepto</button></div><label class="checkbox-field"><input id="applyItbis" name="applyItbis" type="checkbox"> Aplicar ITBIS (18%)</label><div class="invoice-summary" id="invoiceSummary"></div>');
+        document.getElementById('addInvoiceLine').addEventListener('click',()=>{invoiceDraftLines.push({description:'',quantity:1,unitPrice:0});renderInvoiceLines()});
+        document.getElementById('applyItbis').addEventListener('change',updateInvoiceSummary);
+        renderInvoiceLines();
+      }
       if (type === 'session') {
         document.getElementById('email').value = '8298625380mr@gmail.com';
         document.getElementById('resetPasswordButton').addEventListener('click', resetAdminPassword);
       }
       modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>form.querySelector('input,textarea').focus(),100);
     }
+    function invoiceTotals() {
+      const subtotal=invoiceDraftLines.reduce((sum,item)=>sum+(Number(item.quantity)||0)*(Number(item.unitPrice)||0),0);
+      const discount=Math.max(Number(document.getElementById('discount')?.value)||0,0);
+      const taxable=Math.max(subtotal-discount,0);
+      const itbisRate=document.getElementById('applyItbis')?.checked?18:0;
+      const itbis=taxable*itbisRate/100;
+      return {subtotal,discount,itbisRate,itbis,total:taxable+itbis};
+    }
+    function updateInvoiceSummary(){const box=document.getElementById('invoiceSummary');if(!box)return;const t=invoiceTotals();const money=value=>Number(value||0).toLocaleString('es-DO',{style:'currency',currency:'DOP'});box.innerHTML=`Subtotal <strong>${money(t.subtotal)}</strong><br>Descuento <strong>− ${money(t.discount)}</strong><br>ITBIS (${t.itbisRate}%) <strong>${money(t.itbis)}</strong><br>Total <strong>${money(t.total)}</strong>`}
+    function renderInvoiceLines(){const wrap=document.getElementById('invoiceLines');if(!wrap)return;wrap.innerHTML=invoiceDraftLines.map((item,index)=>`<div class="invoice-line"><div class="invoice-line-grid"><div class="field"><label>Descripción</label><input data-line-description="${index}" value="${escape(item.description)}" placeholder="Servicio, pieza o material"></div><div class="field"><label>Cantidad</label><input data-line-quantity="${index}" type="number" min="0.01" step="0.01" value="${Number(item.quantity)||1}"></div><div class="field"><label>Precio unitario RD$</label><input data-line-price="${index}" type="number" min="0" step="0.01" value="${Number(item.unitPrice)||0}"></div></div>${invoiceDraftLines.length>1?`<button class="invoice-line-remove" data-remove-line="${index}" type="button">Quitar concepto</button>`:''}</div>`).join('');wrap.querySelectorAll('[data-line-description]').forEach(input=>input.addEventListener('input',()=>{invoiceDraftLines[Number(input.dataset.lineDescription)].description=input.value}));wrap.querySelectorAll('[data-line-quantity]').forEach(input=>input.addEventListener('input',()=>{invoiceDraftLines[Number(input.dataset.lineQuantity)].quantity=input.value;updateInvoiceSummary()}));wrap.querySelectorAll('[data-line-price]').forEach(input=>input.addEventListener('input',()=>{invoiceDraftLines[Number(input.dataset.linePrice)].unitPrice=input.value;updateInvoiceSummary()}));wrap.querySelectorAll('[data-remove-line]').forEach(button=>button.addEventListener('click',()=>{invoiceDraftLines.splice(Number(button.dataset.removeLine),1);renderInvoiceLines()}));document.getElementById('discount')?.addEventListener('input',updateInvoiceSummary);updateInvoiceSummary()}
     async function resetAdminPassword() {
       if (!window.jonasCloud) { toast('La conexión no está disponible'); return; }
       const email = document.getElementById('email').value.trim();
@@ -295,14 +315,17 @@
         }
         return;
       }
-      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : modalType === 'diagnostic' ? ['client','result'] : modalType === 'invoice' ? ['client','concept','amount'] : ['client','subject','description'];
+      const required = modalType === 'client' ? ['name','phone'] : modalType === 'appointment' ? ['client','time','service'] : modalType === 'diagnostic' ? ['client','result'] : modalType === 'invoice' ? ['client'] : ['client','subject','description'];
       if (required.some(key => !String(data[key] || '').trim())) { toast('Completa los campos marcados con *'); return; }
       const id = String(Date.now());
       if (modalType === 'client') state.clients.unshift({id,...data});
       if (modalType === 'appointment') state.appointments.push({id,...data,status:'Pendiente'});
       if (modalType === 'diagnostic') state.diagnostics.unshift({id,...data,date:'Hoy'});
       if (modalType === 'invoice') {
-        const invoice = {id,number:`F-${new Date().getFullYear()}-${String(state.invoices.length + cloudInvoices.length + 1).padStart(3,'0')}`,client:data.client,phone:data.phone || modalPreset.phone || '',concept:data.concept,amount:String(data.amount).replace(',','.'),status:'Pendiente',date:new Date().toLocaleDateString('es-DO')};
+        const lines=invoiceDraftLines.map(item=>({description:String(item.description||'').trim(),quantity:Number(item.quantity)||0,unitPrice:Number(item.unitPrice)||0})).filter(item=>item.description&&item.quantity>0);
+        if(!lines.length){toast('Agrega por lo menos un concepto a la factura');return}
+        invoiceDraftLines=lines;const totals=invoiceTotals();const concept=lines.map(item=>item.description).join(' + ');
+        const invoice = {id,number:`F-${new Date().getFullYear()}-${String(state.invoices.length + cloudInvoices.length + 1).padStart(3,'0')}`,client:data.client,phone:data.phone || modalPreset.phone || '',address:data.address||'',ncf:data.ncf||'',dueDate:data.dueDate||'',paymentMethod:data.paymentMethod||'Pendiente',notes:data.notes||'',items:lines,concept,subtotal:totals.subtotal,discount:totals.discount,itbisRate:totals.itbisRate,itbis:totals.itbis,amount:totals.total,status:'Pendiente',date:new Date().toLocaleDateString('es-DO')};
         if (modalPreset.clientId && window.jonasCloud && cloudUser) {
           try { await jonasCloud.db.collection('invoices').add({...invoice,clientId:modalPreset.clientId,orderId:modalPreset.orderId || '',createdAt:jonasCloud.firebase.firestore.FieldValue.serverTimestamp()}); closeModal(); render(); toast('Factura enviada al cliente'); return; }
           catch { toast('No se pudo sincronizar la factura'); return; }
@@ -320,7 +343,7 @@
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
     function cloudOrderToAppointment(doc) {
       const order = doc.data();
-      return { id:`cloud-${doc.id}`, remoteId:doc.id, clientId:order.clientId || '', client:order.clientName || 'Cliente', phone:order.clientPhone || '', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' };
+      return { id:`cloud-${doc.id}`, remoteId:doc.id, clientId:order.clientId || '', client:order.clientName || 'Cliente', phone:order.clientPhone || '', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, items:order.items||[], total:Number(order.total)||0, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' };
     }
     async function refreshCloudOrders(showMessage = false) {
       if (!window.jonasCloud || !cloudUser) { if (showMessage) toast('Conecta la agenda primero'); return; }
