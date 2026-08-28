@@ -30,6 +30,7 @@
     .list { padding:0 16px; display:grid; gap:9px; }
     .row-card,.client-card,.diagnostic-card { border:0; text-align:left; width:100%; background:var(--white); border-radius:15px; box-shadow:0 1px 6px rgba(16,42,67,.055); }
     .row-card { min-height:77px; padding:10px 12px 10px 14px; display:flex; align-items:center; gap:8px; }.appointment-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:10px; min-width:0; flex:1; padding:4px 0; }.time { color:var(--blue); width:57px; font-weight:800; font-size:16px; }.grow { flex:1; min-width:0; }.name { display:block; font-weight:750; font-size:16px; color:var(--ink); letter-spacing:0; }.sub { display:block; color:#627d98; font-size:13px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .appointment-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; justify-content:flex-end; }
     .status { padding:5px 9px; border-radius:14px; color:var(--warm); background:var(--warm-bg); font-size:11px; font-weight:750; white-space:nowrap; }.status-button { border:0; cursor:pointer; font-family:inherit; }.status-button::after { content:'⌄'; margin-left:5px; font-size:10px; }.confirmed { background:var(--good-bg); color:var(--good); }
     .client-card { min-height:82px; padding:10px 12px 10px 14px; }.client-open { border:0; background:transparent; color:inherit; text-align:left; display:flex; align-items:center; gap:12px; min-width:0; width:100%; padding:4px 0; }.client-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:7px; margin-top:8px; }.date-button { border:0; background:#e3f4fa; color:#0a6683; border-radius:9px; padding:8px 9px; font-size:12px; font-weight:750; }.delete-button { border:0; background:#fde8e8; color:#b42318; border-radius:9px; padding:8px 9px; font-size:12px; font-weight:750; }.avatar { height:46px; width:46px; border-radius:50%; background:var(--good-bg); color:var(--good); display:grid; place-items:center; font-size:18px; font-weight:800; flex:0 0 auto; }.phone { color:var(--blue); margin-top:5px; font-size:12px; font-weight:700; }.client-date { color:#16806f; margin-top:5px; font-size:12px; font-weight:700; }.arrow { color:#94a3b8; font-size:29px; font-weight:300; }
     .diagnostic-card { padding:13px; }.diagnostic-open { border:0; background:transparent; color:inherit; text-align:left; display:block; width:100%; padding:0; }.diagnostic-actions { display:flex; justify-content:flex-end; margin-top:10px; }.card-top { display:flex; justify-content:space-between; gap:10px; align-items:center; }.date { color:var(--muted); font-size:12px; white-space:nowrap; }.result { color:#334e68; line-height:1.4; margin:11px 0 0; font-size:14px; }
@@ -44,8 +45,7 @@
       .row-card { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:9px; padding:12px; overflow:hidden; }
       .appointment-open { grid-column:1 / -1; width:100%; }
       .appointment-open .grow { overflow:hidden; }
-      .status-button { grid-column:1; justify-self:start; }
-      .row-card > .delete-button { grid-column:2; justify-self:end; }
+      .appointment-actions { grid-column:1 / -1; width:100%; justify-content:space-between; }
       .fab { right:16px; max-width:calc(100vw - 32px); }
     }
     @media (min-width:521px) { .fab { right:calc(50% - 240px); } }
@@ -104,7 +104,7 @@
     if (!state.settings) state.settings = { theme:'azul', background:'claro', textSize:'normal' };
     if (!state.settings.background) state.settings.background = 'claro';
     if (!state.settings.textSize) state.settings.textSize = 'normal';
-    let activeTab = 'agenda'; let modalType = null; let cloudOrders = []; let stopCloudOrders = null; let cloudUser = null;
+    let activeTab = 'agenda'; let modalType = null; let modalPreset = {}; let cloudOrders = []; let stopCloudOrders = null; let cloudInvoices = []; let stopCloudInvoices = null; let cloudClaims = []; let stopCloudClaims = null; let cloudUser = null;
     const content = document.getElementById('content'); const form = document.getElementById('form'); const modal = document.getElementById('modalWrap');
     const escape = (v) => String(v || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
     const formatDate = (value) => value ? new Date(`${value}T00:00:00`).toLocaleDateString('es-DO',{day:'numeric',month:'short',year:'numeric'}) : '';
@@ -139,11 +139,17 @@
     }
     function renderAgenda() {
       const items = [...state.appointments, ...cloudOrders].sort((a,b)=>String(a.time).localeCompare(String(b.time)));
-      content.innerHTML = `<section class="hero"><div class="eyebrow">AGENDA DE HOY</div><h1>${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h1><p>${items.length} visitas programadas</p></section><div class="section-head"><h2>Próximas visitas</h2><button class="refresh-orders" id="refreshOrdersButton" type="button">↻ Actualizar pedidos</button></div><div class="list">${items.length ? items.map(a => `<article class="row-card"><button class="appointment-open" data-detail="appointment" data-id="${a.id}" type="button"><span class="time">${escape(a.time)}</span><span class="grow"><span class="name">${escape(a.client)}</span><span class="sub">${escape(a.service)}</span></span></button><button class="status status-button ${a.status === 'Confirmada' ? 'confirmed' : ''}" data-toggle-appointment="${a.id}" type="button" aria-label="Cambiar estado de la cita">${escape(a.status)}</button><button class="delete-button" data-delete-appointment="${a.id}" type="button">Eliminar</button></article>`).join('') : empty('No hay citas hoy','Añade la primera visita desde el botón azul.')}</div>`;
+      content.innerHTML = `<section class="hero"><div class="eyebrow">AGENDA DE HOY</div><h1>${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}</h1><p>${items.length} visitas programadas</p></section><div class="section-head"><h2>Próximas visitas</h2><button class="refresh-orders" id="refreshOrdersButton" type="button">↻ Actualizar pedidos</button></div><div class="list">${items.length ? items.map(a => `<article class="row-card"><button class="appointment-open" data-detail="appointment" data-id="${a.id}" type="button"><span class="time">${escape(a.time)}</span><span class="grow"><span class="name">${escape(a.client)}</span><span class="sub">${escape(a.service)}</span></span></button><div class="appointment-actions">${a.clientId ? `<button class="date-button" data-invoice-order="${a.id}" type="button">Facturar</button>` : ''}<button class="status status-button ${a.status === 'Confirmada' ? 'confirmed' : ''}" data-toggle-appointment="${a.id}" type="button" aria-label="Cambiar estado de la cita">${escape(a.status)}</button><button class="delete-button" data-delete-appointment="${a.id}" type="button">Eliminar</button></div></article>`).join('') : empty('No hay citas hoy','Añade la primera visita desde el botón azul.')}</div>`;
       bindDetails();
       document.getElementById('refreshOrdersButton').addEventListener('click', () => refreshCloudOrders(true));
       document.querySelectorAll('[data-delete-appointment]').forEach(button => button.addEventListener('click', () => deleteAppointment(button.dataset.deleteAppointment)));
       document.querySelectorAll('[data-toggle-appointment]').forEach(button => button.addEventListener('click', () => toggleAppointmentStatus(button.dataset.toggleAppointment)));
+      document.querySelectorAll('[data-invoice-order]').forEach(button => button.addEventListener('click', () => invoiceOrder(button.dataset.invoiceOrder)));
+    }
+    function invoiceOrder(id) {
+      const order = cloudOrders.find(item => item.id === id);
+      if (!order) return;
+      openModal('invoice',{client:order.client,phone:order.phone,concept:order.service.replace(/^\d{4}-\d{2}-\d{2} · /,''),clientId:order.clientId,orderId:order.remoteId});
     }
     async function toggleAppointmentStatus(id) {
       const remote = cloudOrders.find(item => item.id === id);
@@ -209,18 +215,26 @@
     }
     function renderInvoices() {
       const currency = new Intl.NumberFormat('es-DO',{style:'currency',currency:'DOP'});
-      content.innerHTML = `${heading('Facturas',`${state.invoices.length} emitidas`)}<div class="list">${state.invoices.length ? state.invoices.map(f => `<article class="diagnostic-card"><button class="diagnostic-open" data-detail="invoice" data-id="${f.id}" type="button"><span class="card-top"><span class="name">${escape(f.number)}</span><span class="status ${f.status === 'Pagada' ? 'confirmed' : ''}">${escape(f.status)}</span></span><span class="sub">${escape(f.client)} · ${escape(f.date)}</span><span class="result">${escape(f.concept)}</span><span class="card-top" style="margin-top:12px"><span class="sub">Total</span><span class="name">${currency.format(Number(f.amount) || 0)}</span></span></button><div class="diagnostic-actions"><button class="delete-button" data-delete-invoice="${f.id}" type="button">Eliminar</button></div></article>`).join('') : empty('No hay facturas todavía','Crea la primera factura desde el botón azul.')}</div>`;
+      const items = [...cloudInvoices, ...state.invoices];
+      content.innerHTML = `${heading('Facturas',`${items.length} emitidas`)}<div class="list">${items.length ? items.map(f => `<article class="diagnostic-card"><button class="diagnostic-open" data-detail="invoice" data-id="${f.id}" type="button"><span class="card-top"><span class="name">${escape(f.number)}</span><span class="status ${f.status === 'Pagada' ? 'confirmed' : ''}">${escape(f.status)}</span></span><span class="sub">${escape(f.client)} · ${escape(f.date)}</span><span class="result">${escape(f.concept)}</span><span class="card-top" style="margin-top:12px"><span class="sub">Total</span><span class="name">${currency.format(Number(f.amount) || 0)}</span></span></button><div class="diagnostic-actions"><button class="delete-button" data-delete-invoice="${f.id}" type="button">Eliminar</button></div></article>`).join('') : empty('No hay facturas todavía','Crea la primera factura desde el botón azul.')}</div>`;
       bindDetails();
       document.querySelectorAll('[data-delete-invoice]').forEach(button => button.addEventListener('click', () => deleteInvoice(button.dataset.deleteInvoice)));
     }
-    function deleteInvoice(id) {
+    async function deleteInvoice(id) {
+      const remote = cloudInvoices.find(item => item.id === id);
+      if (remote && window.jonasCloud) {
+        if (!confirm(`¿Eliminar la factura ${remote.number} de ${remote.client}?`)) return;
+        try { await jonasCloud.db.collection('invoices').doc(remote.remoteId).delete(); toast('Factura eliminada'); } catch { toast('No se pudo eliminar la factura'); }
+        return;
+      }
       const invoice = state.invoices.find(item => item.id === id);
       if (!invoice || !confirm(`¿Eliminar la factura ${invoice.number} de ${invoice.client}?`)) return;
       state.invoices = state.invoices.filter(item => item.id !== id);
       persist(); render(); toast('Factura eliminada');
     }
     function renderClaims() {
-      content.innerHTML = `${heading('Reclamaciones',`${state.claims.length} registradas`)}<div class="list">${state.claims.length ? state.claims.map(c => `<button class="diagnostic-card" data-detail="claim" data-id="${c.id}" type="button"><span class="card-top"><span class="name">${escape(c.client)}</span><span class="status ${c.status === 'Resuelta' ? 'confirmed' : ''}">${escape(c.status)}</span></span><span class="sub">${escape(c.subject)} · ${escape(c.date)}</span><span class="result">${escape(c.description)}</span></button>`).join('') : empty('No hay reclamaciones','Registra una reclamación desde el botón azul.')}</div>`;
+      const items=[...cloudClaims,...state.claims];
+      content.innerHTML = `${heading('Reclamaciones',`${items.length} registradas`)}<div class="list">${items.length ? items.map(c => `<button class="diagnostic-card" data-detail="claim" data-id="${c.id}" type="button"><span class="card-top"><span class="name">${escape(c.client)}</span><span class="status ${c.status === 'Resuelta' ? 'confirmed' : ''}">${escape(c.status)}</span></span><span class="sub">${escape(c.subject)} · ${escape(c.date)}</span><span class="result">${escape(c.description)}</span>${c.phone?`<span class="phone">${escape(c.phone)}</span>`:''}</button>`).join('') : empty('No hay reclamaciones','Registra una reclamación desde el botón azul.')}</div>`;
       bindDetails();
     }
     function renderSettings() {
@@ -235,7 +249,7 @@
     function empty(title,text) { return `<div class="empty"><strong>${title}</strong>${text}</div>`; }
     function bindDetails() { document.querySelectorAll('[data-detail]').forEach(el => el.addEventListener('click', () => showDetail(el.dataset.detail, el.dataset.id))); }
     function showDetail(kind, id) {
-      const collection = kind === 'appointment' ? [...state.appointments, ...cloudOrders] : state[kind === 'client' ? 'clients' : kind === 'diagnostic' ? 'diagnostics' : kind === 'invoice' ? 'invoices' : 'claims'];
+      const collection = kind === 'appointment' ? [...state.appointments, ...cloudOrders] : kind === 'invoice' ? [...cloudInvoices, ...state.invoices] : kind === 'claim' ? [...cloudClaims, ...state.claims] : state[kind === 'client' ? 'clients' : 'diagnostics'];
       const item = collection.find(i => i.id === id);
       if (!item) return;
       const details = kind === 'appointment' ? `${item.service} · ${item.time}\nEstado: ${item.status}${item.phone ? `\nTeléfono: ${item.phone}` : ''}${item.address ? `\n\nDirección: ${item.address}\nVivienda: ${item.housingType || 'No especificada'}${item.housingDetails ? `\nDetalles: ${item.housingDetails}` : ''}` : ''}` : kind === 'client' ? `${item.phone}\n${item.address || 'Dirección no registrada'}\nEquipo: ${item.equipment || 'Sin registrar'}` : kind === 'diagnostic' ? `${item.equipment || 'Equipo no indicado'}\n\n${item.result}` : kind === 'invoice' ? `${item.number}\n${item.concept}\nTotal: ${Number(item.amount || 0).toLocaleString('es-DO',{style:'currency',currency:'DOP'})}\nEstado: ${item.status}` : `${item.subject}\n\n${item.description}\n\nEstado: ${item.status}`;
@@ -246,12 +260,13 @@
       session: [['email','Correo del administrador *','8298625380mr@gmail.com','email'],['password','Contraseña *','Tu contraseña segura','password']],
       client: [['name','Nombre completo *','Ej. Laura Sánchez','text'],['phone','Teléfono *','600 000 000','tel'],['address','Dirección','Calle, número, ciudad','text'],['equipment','Equipo / instalación','Ej. Aire acondicionado Split','text'],['nextVisit','Próxima visita','Selecciona una fecha','date']],
       diagnostic: [['client','Cliente *','Nombre del cliente','text'],['equipment','Equipo','Equipo revisado','text'],['result','Resultado *','Conclusión y acciones recomendadas','textarea']],
-      invoice: [['client','Cliente *','Nombre del cliente','text'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (RD$) *','Ej. 8,900.00','number']],
+      invoice: [['client','Cliente *','Nombre del cliente','text'],['phone','Teléfono del cliente','Ej. 829-000-0000','tel'],['concept','Concepto *','Ej. Reparación de aire acondicionado','text'],['amount','Importe (RD$) *','Ej. 8,900.00','number']],
       claim: [['client','Cliente *','Nombre del cliente','text'],['subject','Asunto *','Ej. Incidencia con la instalación','text'],['description','Detalle *','Describe la reclamación','textarea']]
     };
-    function openModal(type) {
-      modalType = type; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación',session:'Conectar agenda'}; document.getElementById('modalTitle').textContent = titles[type];
+    function openModal(type, preset = {}) {
+      modalType = type; modalPreset = preset; const titles = {appointment:'Nueva cita',client:'Nuevo cliente',diagnostic:'Nuevo diagnóstico',invoice:'Crear factura',claim:'Nueva reclamación',session:'Conectar agenda'}; document.getElementById('modalTitle').textContent = titles[type];
       form.innerHTML = fields[type].map(([name,label,placeholder,input]) => `<div class="field"><label for="${name}">${label}</label>${input === 'textarea' ? `<textarea id="${name}" name="${name}" placeholder="${placeholder}"></textarea>` : `<input id="${name}" name="${name}" type="${input}" placeholder="${placeholder}">`}</div>`).join('') + (type === 'session' ? '<button class="action-button secondary" id="resetPasswordButton" type="button">Olvidé mi contraseña</button>' : '');
+      Object.entries(preset).forEach(([name,value]) => { const input=form.elements.namedItem(name); if(input) input.value=value || ''; });
       if (type === 'session') {
         document.getElementById('email').value = '8298625380mr@gmail.com';
         document.getElementById('resetPasswordButton').addEventListener('click', resetAdminPassword);
@@ -286,7 +301,14 @@
       if (modalType === 'client') state.clients.unshift({id,...data});
       if (modalType === 'appointment') state.appointments.push({id,...data,status:'Pendiente'});
       if (modalType === 'diagnostic') state.diagnostics.unshift({id,...data,date:'Hoy'});
-      if (modalType === 'invoice') state.invoices.unshift({id,number:`F-${new Date().getFullYear()}-${String(state.invoices.length + 1).padStart(3,'0')}`,client:data.client,concept:data.concept,amount:String(data.amount).replace(',','.'),status:'Pendiente',date:'Hoy'});
+      if (modalType === 'invoice') {
+        const invoice = {id,number:`F-${new Date().getFullYear()}-${String(state.invoices.length + cloudInvoices.length + 1).padStart(3,'0')}`,client:data.client,phone:data.phone || modalPreset.phone || '',concept:data.concept,amount:String(data.amount).replace(',','.'),status:'Pendiente',date:new Date().toLocaleDateString('es-DO')};
+        if (modalPreset.clientId && window.jonasCloud && cloudUser) {
+          try { await jonasCloud.db.collection('invoices').add({...invoice,clientId:modalPreset.clientId,orderId:modalPreset.orderId || '',createdAt:jonasCloud.firebase.firestore.FieldValue.serverTimestamp()}); closeModal(); render(); toast('Factura enviada al cliente'); return; }
+          catch { toast('No se pudo sincronizar la factura'); return; }
+        }
+        state.invoices.unshift(invoice);
+      }
       if (modalType === 'claim') state.claims.unshift({id,...data,status:'Pendiente',date:'Hoy'});
       persist(); closeModal(); render(); toast(modalType === 'client' ? 'Cliente añadido' : modalType === 'appointment' ? 'Cita agendada' : modalType === 'diagnostic' ? 'Diagnóstico guardado' : modalType === 'invoice' ? 'Factura creada' : 'Reclamación registrada');
     }
@@ -298,7 +320,7 @@
     modal.addEventListener('click',e=>{if(e.target === modal) closeModal();});
     function cloudOrderToAppointment(doc) {
       const order = doc.data();
-      return { id:`cloud-${doc.id}`, remoteId:doc.id, client:order.clientName || 'Cliente', phone:order.clientPhone || '', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' };
+      return { id:`cloud-${doc.id}`, remoteId:doc.id, clientId:order.clientId || '', client:order.clientName || 'Cliente', phone:order.clientPhone || '', time:order.preferredTime || 'Por coordinar', service:`${order.preferredDate ? `${order.preferredDate} · ` : ''}${(order.items || []).map(item => item.name).join(' + ') || 'Servicio solicitado'}`, address:order.clientAddress || '', housingType:order.housingType || '', housingDetails:order.housingDetails || '', status:order.status || 'Pendiente' };
     }
     async function refreshCloudOrders(showMessage = false) {
       if (!window.jonasCloud || !cloudUser) { if (showMessage) toast('Conecta la agenda primero'); return; }
@@ -317,7 +339,16 @@
         render();
       }, () => { cloudOrders = []; if (activeTab === 'agenda') render(); });
     }
-    if (window.jonasCloud) jonasCloud.auth.onAuthStateChanged(user => { cloudUser = user; if (user) startCloudOrders(); else { stopCloudOrders?.(); stopCloudOrders=null; cloudOrders=[]; } if (activeTab === 'settings' || activeTab === 'agenda') render(); });
+    function cloudInvoice(doc) { const item=doc.data(); return {id:`cloud-invoice-${doc.id}`,remoteId:doc.id,...item}; }
+    function startCloudInvoices() {
+      stopCloudInvoices?.();
+      stopCloudInvoices = jonasCloud.db.collection('invoices').onSnapshot(snapshot=>{cloudInvoices=snapshot.docs.map(cloudInvoice);if(activeTab==='invoices')render();},()=>{cloudInvoices=[];if(activeTab==='invoices')render();});
+    }
+    function startCloudClaims() {
+      stopCloudClaims?.();
+      stopCloudClaims = jonasCloud.db.collection('claims').onSnapshot(snapshot=>{cloudClaims=snapshot.docs.map(doc=>({id:`cloud-claim-${doc.id}`,remoteId:doc.id,...doc.data()}));if(activeTab==='claims')render();},()=>{cloudClaims=[];if(activeTab==='claims')render();});
+    }
+    if (window.jonasCloud) jonasCloud.auth.onAuthStateChanged(user => { cloudUser = user; if (user) { startCloudOrders(); startCloudInvoices(); startCloudClaims(); } else { stopCloudOrders?.(); stopCloudOrders=null; cloudOrders=[]; stopCloudInvoices?.(); stopCloudInvoices=null; cloudInvoices=[]; stopCloudClaims?.(); stopCloudClaims=null; cloudClaims=[]; } if (activeTab === 'settings' || activeTab === 'agenda' || activeTab === 'invoices' || activeTab === 'claims') render(); });
     window.addEventListener('focus', () => refreshCloudOrders(false));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshCloudOrders(false); });
     if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
