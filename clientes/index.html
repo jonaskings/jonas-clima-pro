@@ -73,7 +73,7 @@
       const extras=[...document.querySelectorAll('[data-install-extra]:checked')].map(input=>({id:input.dataset.installExtra,name:input.dataset.installExtra==='urgente'?'Servicio urgente':input.dataset.installExtra==='breaker'?'Breaker':'Palometas',price:Number(input.dataset.price)||0,extra:true}));
       const preferredDate=document.getElementById('preferredDate')?.value;
       const preferredTime=document.getElementById('preferredTime')?.value;
-      const selectedTime=document.getElementById('preferredTime')?.selectedOptions[0];
+      const selectedTime=document.getElementById('preferredTime')?.selectedOptions?.[0];
       const slotId=selectedTime?.dataset.slotId;
       const equipmentBtu=document.getElementById('equipmentBtu')?.value||'';
       const equipmentVoltage=document.getElementById('equipmentVoltage')?.value||'';
