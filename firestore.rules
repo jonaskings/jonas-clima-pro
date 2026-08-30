@@ -38,5 +38,13 @@ service cloud.firestore {
         request.resource.data.time == resource.data.time
       );
     }
+
+    match /bookingLocks/{lockId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.clientId == request.auth.uid;
+      allow delete: if isAdmin();
+      allow update: if false;
+    }
   }
 }
